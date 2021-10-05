@@ -12,9 +12,7 @@ import glob
 t0 = time.time()
 from gmf_cmod5n import GMFCmod5n
 #first test to look at the content of the daily files SAFE containing the noise and denoised sigma0
-DIR_INPUT = '/home/datawork-cersat-public/cache/project/mpc-sentinel1/analysis/s1_data_analysis/L1_v16/WV'
-INPUT_files = os.path.join(DIR_INPUT,'%s_wv_ocean_calibration_CMOD5n_ecmwf0125_windspeed_weighted_slc_level1_20150101_today_runv16.nc')
-
+from src.config import INPUT_files
 def read_fat_calib_nc(satellite_list=['S1A','S1B']):
     """
     read the fat netcdf files for NRCS investigations build from ocean_wv_calibration_huimin_method.py

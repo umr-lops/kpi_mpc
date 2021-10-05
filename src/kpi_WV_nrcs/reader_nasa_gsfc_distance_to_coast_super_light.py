@@ -5,8 +5,8 @@ Nov 2019
 import netCDF4
 import numpy as np
 import logging
-ofname = '/home/datawork-lops-siam/project/cfosat_calval_wwec/data/colocations/NASA_tiff_distance_to_coast_converted_v2.nc'
-nc = netCDF4.Dataset(ofname)
+from src.config import RASTER_NASA_COASTLINE
+nc = netCDF4.Dataset(RASTER_NASA_COASTLINE)
 DISTANCE_COASTs = nc.variables['distance_to_coast'][:]
 LON_COASTs = nc.variables['lon'][:]
 LAT_COASTs = nc.variables['lat'][:]

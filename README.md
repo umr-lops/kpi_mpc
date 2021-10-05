@@ -8,3 +8,6 @@ libs to compute 2 KPIs  for MPC Sentinel-1 project:
     antoine.grouazel@ifremer.fr
 #creation:
     2021
+    
+#usage
+    python ./src/kpi_WV_nrcs/compute_kpi_1b.py --verbose

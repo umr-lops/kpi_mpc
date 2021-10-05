@@ -7,6 +7,7 @@ import os
 import logging
 import numpy as np
 import datetime
+import time
 from read_aggregated_calbration_SLC_WV_level_netcdf_file_for_nrcs_investigations import read_fat_calib_nc
 
 POLARIZATION = 'VV'
@@ -23,13 +24,13 @@ def compute_kpi_1b(sat):
         stop_current_month (datetime):
         envelop_value : (float) 2-sigma dB threshold based on 3 months prior period
     """
-    df_slc_sat = read_fat_calib_nc(sta_str=None,sto_str=None,subdir=None)
+    df_slc_sat = read_fat_calib_nc(satellite_list=[sat])
     stop_current_month = datetime.datetime.today()
-    start_current_month = stop_current_month -  datetime.timdelta(days=30)
+    start_current_month = stop_current_month -  datetime.timedelta(days=30)
     logging.debug('start_current_month : %s',start_current_month)
     logging.debug('stop_current_month : %s',stop_current_month)
     #compute the 2 sigma envelopp on the last 3 months prior to current month
-    start_prior_period = start_current_month -  datetime.timdelta(days=30*3)
+    start_prior_period = start_current_month -  datetime.timedelta(days=30*3)
     stop_prior_period = start_current_month
     df_slc = df_slc_sat[sat]
     df_slc['direct_diff_calib_cst_db'] = df_slc['sigma0_denoised_db'] - df_slc['tmp_gmf_cmod5n_nrcs_db']
@@ -49,3 +50,31 @@ def compute_kpi_1b(sat):
     kpi_value = 100.*nb_measu_outside_envelop/nb_measu_total
     logging.debug('kpi_value : %s',kpi_value)
     return kpi_value,start_current_month,stop_current_month,envelop_value
+
+if __name__ == '__main__':
+    root = logging.getLogger ()
+    if root.handlers:
+        for handler in root.handlers:
+            root.removeHandler (handler)
+    import argparse
+    import resource
+    time.sleep(np.random.rand(1,1)[0][0]) #to avoid issue with mkdir
+    parser = argparse.ArgumentParser (description='kpi-1b')
+    parser.add_argument ('--verbose',action='store_true',default=False)
+    args = parser.parse_args ()
+
+    fmt = '%(asctime)s %(levelname)s %(filename)s(%(lineno)d) %(message)s'
+
+    if args.verbose :
+        logging.basicConfig(level=logging.DEBUG,format=fmt,
+                            datefmt='%d/%m/%Y %H:%M:%S')
+    else :
+        logging.basicConfig(level=logging.INFO,format=fmt,
+                            datefmt='%d/%m/%Y %H:%M:%S')
+    t0 = time.time ()
+    sat = 'S1B'
+    kpi_v,start_cur_month,stop_cur_month,envelop_val = compute_kpi_1b(sat)
+    logging.info('kpi_v :  %s (envelop %s-sigma value: %s dB)',kpi_v,ENVELOP,envelop_val)
+    logging.info('start_cur_month : %s stop_cur_month : %s',start_cur_month,stop_cur_month)
+    logging.info('done in %1.3f min',(time.time()-t0)/60.)
+    logging.info('peak memory usage: %s Mbytes',resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024.)

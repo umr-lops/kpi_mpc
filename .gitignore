@@ -1,2 +1,6 @@
 
 .idea/
+
+src/__pycache__/
+
+src/kpi_WV_nrcs/__pycache__/
