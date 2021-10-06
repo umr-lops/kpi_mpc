@@ -41,8 +41,8 @@ def compute_kpi_1b(sat,wv):
         cond_inc = (df_slc['_inc_sar'] > 30)
     else:
         raise Exception('wv value un expected : %s'%wv)
-
-    mask_prior_period = cond_inc & (df_slc['time']>=start_prior_period) & (df_slc['time']<=stop_prior_period) & (np.isfinite(df_slc['direct_diff_calib_cst_db']))
+    ocean_acqui_filters = (abs(df_slc['_lat_sar']) < 55) & (df_slc['_land'] == False) & (df_slc['distance2coast'] > 100)
+    mask_prior_period = ocean_acqui_filters & cond_inc & (df_slc['time']>=start_prior_period) & (df_slc['time']<=stop_prior_period) & (np.isfinite(df_slc['direct_diff_calib_cst_db']))
     subset_df = df_slc[mask_prior_period]
     nb_nan = np.isnan(subset_df['direct_diff_calib_cst_db']).sum()
     logging.debug('some values: %s',subset_df['direct_diff_calib_cst_db'].values)
@@ -54,7 +54,7 @@ def compute_kpi_1b(sat,wv):
     #compute the number of product within the envelop for current month
     nb_measu_total = 0
     nb_measu_outside_envelop = 0
-    mask_current_month = (df_slc['time']>=start_current_month) & (df_slc['time']<=stop_current_month)
+    mask_current_month = ocean_acqui_filters & cond_inc & (df_slc['time']>=start_current_month) & (df_slc['time']<=stop_current_month)
     subset_current_period = df_slc[mask_current_month]
     logging.info('nb pts current month : %s',len(subset_current_period['time']))
     nb_measu_total = len(subset_current_period['time'])
