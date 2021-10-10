@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 IFREMER
 Oct 2021
@@ -14,11 +15,14 @@ POLARIZATION = 'VV'
 MODE = 'WV'
 ENVELOP = 2 #sigma
 PRIOR_PERIOD = 3 #months
-def compute_kpi_1b(sat,wv):
+LAT_MAX = 55
+MIN_DIST_2_COAST = 100 #km
+def compute_kpi_1b(sat,wv,stop_analysis_period=None):
     """
     NRCS (denoised) observed compared to predicted GMF CMOD5n
     :param sat: str S1A or ..
     :param wv: str wv1 or wv2
+    :param stop_analysis_period: datetime (-> period considered date-1 month : date)
     :return:
         kpi_value (float): between 0 and 100 %
         start_current_month (datetime):
@@ -26,7 +30,10 @@ def compute_kpi_1b(sat,wv):
         envelop_value : (float) 2-sigma dB threshold based on 3 months prior period
     """
     df_slc_sat = read_fat_calib_nc(satellite_list=[sat])
-    stop_current_month = datetime.datetime.today()
+    if stop_analysis_period is None:
+        stop_current_month = datetime.datetime.today()
+    else:
+        stop_current_month = stop_analysis_period
     start_current_month = stop_current_month -  datetime.timedelta(days=30)
     logging.debug('start_current_month : %s',start_current_month)
     logging.debug('stop_current_month : %s',stop_current_month)
@@ -41,7 +48,7 @@ def compute_kpi_1b(sat,wv):
         cond_inc = (df_slc['_inc_sar'] > 30)
     else:
         raise Exception('wv value un expected : %s'%wv)
-    ocean_acqui_filters = (abs(df_slc['_lat_sar']) < 55) & (df_slc['_land'] == False) & (df_slc['distance2coast'] > 100)
+    ocean_acqui_filters = (abs(df_slc['_lat_sar']) < LAT_MAX) & (df_slc['_land'] == False) & (df_slc['distance2coast'] > MIN_DIST_2_COAST)
     mask_prior_period = ocean_acqui_filters & cond_inc & (df_slc['time']>=start_prior_period) & (df_slc['time']<=stop_prior_period) & (np.isfinite(df_slc['direct_diff_calib_cst_db']))
     subset_df = df_slc[mask_prior_period]
     nb_nan = np.isnan(subset_df['direct_diff_calib_cst_db']).sum()
@@ -76,6 +83,7 @@ if __name__ == '__main__':
     parser.add_argument ('--verbose',action='store_true',default=False)
     parser.add_argument('--satellite',choices=['S1A','S1B'],required=True,help='S-1 unit choice')
     parser.add_argument('--wv',choices=['wv1','wv2'],required=True,help='WV incidence angle choice')
+    parser.add_argument('--enddate',help='end of the 1 month period analysed',required=False,action='store',default=None)
     args = parser.parse_args ()
 
     fmt = '%(asctime)s %(levelname)s %(filename)s(%(lineno)d) %(message)s'
@@ -89,7 +97,11 @@ if __name__ == '__main__':
     t0 = time.time ()
     sat = args.satellite
     wv = args.wv
-    kpi_v,start_cur_month,stop_cur_month,envelop_val = compute_kpi_1b(sat,wv=wv)
+    if args.enddate is not None:
+        end_date = datetime.datetime.strptime(args.enddate,'%Y%m%d')
+    else:
+        end_date = args.enddate # None case
+    kpi_v,start_cur_month,stop_cur_month,envelop_val = compute_kpi_1b(sat,wv=wv,stop_analysis_period=end_date)
     logging.info('##########')
     logging.info('kpi_v %s %s :  %s (envelop %s-sigma value: %s dB)',sat,wv,kpi_v,ENVELOP,envelop_val)
     logging.info('##########')
