@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+#PBS -l walltime=01:45:05
+#PBS -l mem=10gb
+#PBS -N KPI1b
+#PBS -m n
+echo "Hello ${1} $2 $3"
+pybin=/home1/datawork/agrouaze/conda_envs/py3_dev_datawork/bin/python
+pyexe=/home1/datahome/agrouaze/git/kpi_mpc/src/kpi_WV_nrcs/compute_kpi_1b.py
+#S1B wv2 YYYYMMDD
+export PYTHONPATH=/home1/datahome/agrouaze/git/kpi_mpc/:$PYTHONPATH
+export PYTHONPATH=/home1/datahome/agrouaze/git/mpc/data_collect/:$PYTHONPATH
+export PYTHONPATH=/home1/datahome/agrouaze/git/mpc/qualitycheck/:$PYTHONPATH
+#$pybin $pyexe --satellite $1 --wv $2 --enddate $3 --version test9 --overwrite
+$pybin $pyexe --satellite $1 --wv $2 --enddate $3 --overwrite
+echo end of python script exe
+exit 0

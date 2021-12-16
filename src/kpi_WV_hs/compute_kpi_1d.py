@@ -28,7 +28,7 @@ def load_Level2_series(satellite):
     component = 'osw'
     fpathagg = os.path.join(EXTRACTION_SERIES_L2F_FOR_LONGTERM_MONITORING_L2,
                             '%s_%s_longterm_inputdata_from_L2F_%s.nc' % (
-                                component,satellite,'last365days'))  # for dev/test
+                                component,satellite,'fullmission'))  # for dev/test last365days
     logging.info('path aggregation = %s exists %s',fpathagg,os.path.exists(fpathagg))
     df = xarray.open_dataset(fpathagg).to_dataframe()
     logging.info("%s %s ok",component,satellite)
@@ -91,7 +91,7 @@ def compute_kpi_1d(sat,wv,dev=False,stop_analysis_period=None):
                           & (df['oswLandFlag'] == 0) & (df['dist2coastKM'] > MIN_DIST_2_COAST) & cond_inc &(np.isfinite(df['bias_swh_azc_' + wv]))
     mask_prior_period =  (df['fdatedt']>=start_prior_period) \
                         & (df['fdatedt']<=stop_prior_period)
-    final_mask_prior = ocean_acqui_filters
+    final_mask_prior = ocean_acqui_filters & mask_prior_period
     logging.info('nb pts in prior period (without extra filters) : %s',mask_prior_period.sum())
     subset_df = df[final_mask_prior]
     nb_nan = np.isnan(subset_df['bias_swh_azc_' + wv]).sum()
@@ -105,31 +105,35 @@ def compute_kpi_1d(sat,wv,dev=False,stop_analysis_period=None):
     mask_current_month = ocean_acqui_filters \
                          & (df['fdatedt']>=start_current_month) & (df['fdatedt']<=stop_current_month)
     subset_current_period = df[mask_current_month]
-    logging.info('max Hs WW3 in subset : %s',np.nanmax(subset_current_period['ww3_effective_2Dcutoff_hs']))
-    logging.info('max Hs SAR in subset : %s',np.nanmax(subset_current_period['s1_effective_hs_2Dcutoff']))
-    logging.info('min Hs WW3 in subset : %s',np.nanmin(subset_current_period['ww3_effective_2Dcutoff_hs']))
-    logging.info('min Hs SAR in subset : %s',np.nanmin(subset_current_period['s1_effective_hs_2Dcutoff']))
-    logging.info('nb pts current month : %s',len(subset_current_period['fdatedt']))
-    nb_measu_total = len(subset_current_period['fdatedt'])
-    nb_measu_outside_envelop = (abs(subset_current_period['bias_swh_azc_' + wv])<envelop_value).sum()
+    if 'ww3_effective_2Dcutoff_hs' in subset_current_period and len(subset_current_period['ww3_effective_2Dcutoff_hs'])>0:
+        logging.info('max Hs WW3 in subset : %s',np.nanmax(subset_current_period['ww3_effective_2Dcutoff_hs']))
+        logging.info('max Hs SAR in subset : %s',np.nanmax(subset_current_period['s1_effective_hs_2Dcutoff']))
+        logging.info('min Hs WW3 in subset : %s',np.nanmin(subset_current_period['ww3_effective_2Dcutoff_hs']))
+        logging.info('min Hs SAR in subset : %s',np.nanmin(subset_current_period['s1_effective_hs_2Dcutoff']))
+        logging.info('nb pts current month : %s',len(subset_current_period['fdatedt']))
+        nb_measu_total = len(subset_current_period['fdatedt'])
+        nb_measu_outside_envelop = (abs(subset_current_period['bias_swh_azc_' + wv])<envelop_value).sum()
 
-    kpi_value = 100.*nb_measu_outside_envelop/nb_measu_total
-    logging.debug('kpi_value : %s',kpi_value)
-    if dev:
-        from matplotlib import pyplot as plt
-        plt.figure()
-        binz = np.arange(0,10,0.1)
-        hh,_ = np.histogram(subset_current_period['ww3_effective_2Dcutoff_hs'],binz)
-        plt.plot(binz[0:-1],hh,label='WWIII %s'%len(subset_current_period['ww3_effective_2Dcutoff_hs']))
-        hh,_ = np.histogram(subset_current_period['s1_effective_hs_2Dcutoff'],binz)
-        plt.plot(binz[0 :-1],hh,label='SAR %s'%len(subset_current_period['ww3_effective_2Dcutoff_hs']))
-        plt.grid(True)
-        plt.legend()
-        plt.xlabel('Hs (m)')
-        output = '/home1/scratch/agrouaze/test_histo_kpi_1d.png'
-        plt.savefig(output)
-        logging.info('png test : %s',output)
-        #plt.show()
+        kpi_value = 100.*nb_measu_outside_envelop/nb_measu_total
+        logging.debug('kpi_value : %s',kpi_value)
+        if dev:
+            from matplotlib import pyplot as plt
+            plt.figure()
+            binz = np.arange(0,10,0.1)
+            hh,_ = np.histogram(subset_current_period['ww3_effective_2Dcutoff_hs'],binz)
+            plt.plot(binz[0:-1],hh,label='WWIII %s'%len(subset_current_period['ww3_effective_2Dcutoff_hs']))
+            hh,_ = np.histogram(subset_current_period['s1_effective_hs_2Dcutoff'],binz)
+            plt.plot(binz[0 :-1],hh,label='SAR %s'%len(subset_current_period['ww3_effective_2Dcutoff_hs']))
+            plt.grid(True)
+            plt.legend()
+            plt.xlabel('Hs (m)')
+            output = '/home1/scratch/agrouaze/test_histo_kpi_1d.png'
+            plt.savefig(output)
+            logging.info('png test : %s',output)
+            #plt.show()
+    else:
+        kpi_value = np.nan
+        logging.info('no data for period %s to %s',start_current_month,stop_current_month)
     return kpi_value,start_current_month,stop_current_month,envelop_value
 
 if __name__ == '__main__':

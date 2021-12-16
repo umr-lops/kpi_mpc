@@ -13,11 +13,12 @@ from read_aggregated_calbration_SLC_WV_level_netcdf_file_for_nrcs_investigations
 
 POLARIZATION = 'VV'
 MODE = 'WV'
-ENVELOP = 2 #sigma
+#ENVELOP = 2 #sigma
+ENVELOP = 95 # %
 PRIOR_PERIOD = 3 #months
 LAT_MAX = 55
 MIN_DIST_2_COAST = 100 #km
-def compute_kpi_1b(sat,wv,stop_analysis_period=None):
+def compute_kpi_1b(sat,wv,stop_analysis_period=None,df_slc_sat=None):
     """
     NRCS (denoised) observed compared to predicted GMF CMOD5n
     :param sat: str S1A or ..
@@ -29,7 +30,8 @@ def compute_kpi_1b(sat,wv,stop_analysis_period=None):
         stop_current_month (datetime):
         envelop_value : (float) 2-sigma dB threshold based on 3 months prior period
     """
-    df_slc_sat = read_fat_calib_nc(satellite_list=[sat])
+    if df_slc_sat is None:
+        df_slc_sat = read_fat_calib_nc(satellite_list=[sat])
     if stop_analysis_period is None:
         stop_current_month = datetime.datetime.today()
     else:
@@ -55,21 +57,33 @@ def compute_kpi_1b(sat,wv,stop_analysis_period=None):
     logging.debug('some values: %s',subset_df['direct_diff_calib_cst_db'].values)
     logging.info('nb_nan : %s',nb_nan)
     logging.info('nb finite %s/%s',np.isfinite(subset_df['direct_diff_calib_cst_db']).sum(),len(subset_df['direct_diff_calib_cst_db']))
-    envelop_value = ENVELOP*np.nanstd(subset_df['direct_diff_calib_cst_db'])
+    #envelop_value = ENVELOP*np.nanstd(subset_df['direct_diff_calib_cst_db'])
+    envelop_value = np.percentile(abs(subset_df['direct_diff_calib_cst_db']),ENVELOP)
     logging.debug('envelop_value : %s',envelop_value)
+
 
     #compute the number of product within the envelop for current month
     nb_measu_total = 0
-    nb_measu_outside_envelop = 0
+    nb_measu_inside_envelop = 0
     mask_current_month = ocean_acqui_filters & cond_inc & (df_slc['time']>=start_current_month) & (df_slc['time']<=stop_current_month)
     subset_current_period = df_slc[mask_current_month]
     logging.info('nb pts current month : %s',len(subset_current_period['time']))
     nb_measu_total = len(subset_current_period['time'])
-    nb_measu_outside_envelop = (abs(subset_current_period['direct_diff_calib_cst_db'])<envelop_value).sum()
+    #nb_measu_outside_envelop = (abs(subset_current_period['direct_diff_calib_cst_db'])<envelop_value).sum()
 
-    kpi_value = 100.*nb_measu_outside_envelop/nb_measu_total
+    # definition proposee par Hajduch le 10dec2021 screenshot a lappuit (je ne suis pas convaincu pas l introduction du biais dans le calcul de levenveloppe car le KPI sera dautant plus elever que le biais sera fort (cest linverse qui est cherche)
+    bias_minus_2sigma = abs(subset_current_period['direct_diff_calib_cst_db'].mean() - envelop_value)
+    bias_plus_2sigma = abs(subset_current_period['direct_diff_calib_cst_db'].mean() + envelop_value)
+    logging.info('bias_plus_2sigma %s', bias_plus_2sigma)
+    T = np.max([bias_minus_2sigma, bias_plus_2sigma])
+    logging.info('T : %s %s', T.shape, T)
+    nb_measu_inside_envelop = (abs(subset_current_period['direct_diff_calib_cst_db']) < T).sum()
+    mean_bias = np.mean(subset_current_period['direct_diff_calib_cst_db'])
+    logging.debug('nb_measu_inside_envelop : %s', nb_measu_inside_envelop)
+    kpi_value = 100. * nb_measu_inside_envelop / nb_measu_total
+
     logging.debug('kpi_value : %s',kpi_value)
-    return kpi_value,start_current_month,stop_current_month,envelop_value
+    return kpi_value,start_current_month,stop_current_month,envelop_value,nb_measu_total,nb_measu_inside_envelop,mean_bias
 
 if __name__ == '__main__':
     root = logging.getLogger ()
@@ -81,6 +95,8 @@ if __name__ == '__main__':
     time.sleep(np.random.rand(1,1)[0][0]) #to avoid issue with mkdir
     parser = argparse.ArgumentParser (description='kpi-1b')
     parser.add_argument ('--verbose',action='store_true',default=False)
+    parser.add_argument('--overwrite', action='store_true', default=False,
+                        help='overwrite the existing outputs [default=False]', required=False)
     parser.add_argument('--satellite',choices=['S1A','S1B'],required=True,help='S-1 unit choice')
     parser.add_argument('--wv',choices=['wv1','wv2'],required=True,help='WV incidence angle choice')
     parser.add_argument('--enddate',help='end of the 1 month period analysed',required=False,action='store',default=None)
@@ -101,10 +117,29 @@ if __name__ == '__main__':
         end_date = datetime.datetime.strptime(args.enddate,'%Y%m%d')
     else:
         end_date = args.enddate # None case
-    kpi_v,start_cur_month,stop_cur_month,envelop_val = compute_kpi_1b(sat,wv=wv,stop_analysis_period=end_date)
-    logging.info('##########')
-    logging.info('kpi_v %s %s :  %s (envelop %s-sigma value: %s dB)',sat,wv,kpi_v,ENVELOP,envelop_val)
-    logging.info('##########')
-    logging.info('start_cur_month : %s stop_cur_month : %s',start_cur_month,stop_cur_month)
-    logging.info('done in %1.3f min',(time.time()-t0)/60.)
-    logging.info('peak memory usage: %s Mbytes',resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024.)
+    output_file = '/home1/scratch/agrouaze/kpi_1b/%s/kpi_output_%s_%s_%s.txt' % ('v2percentile95',
+                                                                                    sat, wv,
+                                                                                    end_date.strftime('%Y%m%d'))
+    if os.path.exists(output_file) and args.overwrite is False:
+        logging.info('output %s already exists', output_file)
+    else:
+
+
+        kpi_v,start_cur_month,stop_cur_month,envelop_val,nb_measu_total,nb_measu_inside_envelop,mean_bias =\
+            compute_kpi_1b(sat,wv=wv,stop_analysis_period=end_date)
+        logging.info('##########')
+        logging.info('kpi_v %s %s :  %s (envelop %s-sigma value: %s dB)',sat,wv,kpi_v,ENVELOP,envelop_val)
+        logging.info('##########')
+        logging.info('start_cur_month : %s stop_cur_month : %s',start_cur_month,stop_cur_month)
+
+        if not os.path.exists(os.path.dirname(output_file)):
+            os.makedirs(os.path.dirname(output_file), 0o0775)
+        fid = open(output_file, 'w')
+        fid.write('%s %s %s %s %s %s\n' % (kpi_v, start_cur_month, stop_cur_month, envelop_val, nb_measu_total, mean_bias))
+        fid.close()
+        logging.info('output: %s', output_file)
+
+
+        logging.info('done in %1.3f min',(time.time()-t0)/60.)
+        logging.info('peak memory usage: %s Mbytes',resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024.)
+    logging.info("over")
