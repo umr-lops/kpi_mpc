@@ -58,6 +58,7 @@ def compute_kpi_1b(sat,wv,stop_analysis_period=None,df_slc_sat=None):
     logging.info('nb_nan : %s',nb_nan)
     logging.info('nb finite %s/%s',np.isfinite(subset_df['direct_diff_calib_cst_db']).sum(),len(subset_df['direct_diff_calib_cst_db']))
     #envelop_value = ENVELOP*np.nanstd(subset_df['direct_diff_calib_cst_db'])
+    std = np.nanstd(subset_df['direct_diff_calib_cst_db'])
     envelop_value = np.percentile(abs(subset_df['direct_diff_calib_cst_db']),ENVELOP)
     logging.debug('envelop_value : %s',envelop_value)
 
@@ -83,7 +84,7 @@ def compute_kpi_1b(sat,wv,stop_analysis_period=None,df_slc_sat=None):
     kpi_value = 100. * nb_measu_inside_envelop / nb_measu_total
 
     logging.debug('kpi_value : %s',kpi_value)
-    return kpi_value,start_current_month,stop_current_month,envelop_value,nb_measu_total,nb_measu_inside_envelop,mean_bias
+    return kpi_value,start_current_month,stop_current_month,envelop_value,nb_measu_total,nb_measu_inside_envelop,mean_bias,std
 
 if __name__ == '__main__':
     root = logging.getLogger ()
@@ -117,7 +118,10 @@ if __name__ == '__main__':
         end_date = datetime.datetime.strptime(args.enddate,'%Y%m%d')
     else:
         end_date = args.enddate # None case
-    output_file = '/home1/scratch/agrouaze/kpi_1b/%s/kpi_output_%s_%s_%s.txt' % ('v2percentile95',
+    # output_file = '/home1/scratch/agrouaze/kpi_1b/%s/kpi_output_%s_%s_%s.txt' % ('v2percentile95',
+    #                                                                                 sat, wv,
+    #                                                                                 end_date.strftime('%Y%m%d'))
+    output_file = '/home/datawork-cersat-public/cache/project/mpc-sentinel1/analysis/s1_data_analysis/kpi/kpi_1b/%s/kpi_output_%s_%s_%s.txt' % ('v2percentile95',
                                                                                     sat, wv,
                                                                                     end_date.strftime('%Y%m%d'))
     if os.path.exists(output_file) and args.overwrite is False:
@@ -125,7 +129,7 @@ if __name__ == '__main__':
     else:
 
 
-        kpi_v,start_cur_month,stop_cur_month,envelop_val,nb_measu_total,nb_measu_inside_envelop,mean_bias =\
+        kpi_v,start_cur_month,stop_cur_month,envelop_val,nb_measu_total,nb_measu_inside_envelop,mean_bias,std =\
             compute_kpi_1b(sat,wv=wv,stop_analysis_period=end_date)
         logging.info('##########')
         logging.info('kpi_v %s %s :  %s (envelop %s-sigma value: %s dB)',sat,wv,kpi_v,ENVELOP,envelop_val)
@@ -135,7 +139,7 @@ if __name__ == '__main__':
         if not os.path.exists(os.path.dirname(output_file)):
             os.makedirs(os.path.dirname(output_file), 0o0775)
         fid = open(output_file, 'w')
-        fid.write('%s %s %s %s %s %s\n' % (kpi_v, start_cur_month, stop_cur_month, envelop_val, nb_measu_total, mean_bias))
+        fid.write('%s %s %s %s %s %s %s\n' % (kpi_v, start_cur_month, stop_cur_month, envelop_val, nb_measu_total, mean_bias,std))
         fid.close()
         logging.info('output: %s', output_file)
 

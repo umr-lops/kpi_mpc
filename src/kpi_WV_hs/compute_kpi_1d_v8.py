@@ -228,7 +228,9 @@ if __name__ == '__main__':
         end_date = datetime.datetime.strptime(args.enddate,'%Y%m%d')
     else :
         end_date = args.enddate  # None case
-    output_file = '/home1/scratch/agrouaze/kpi_1d_v2/%s/kpi_output_%s_%s_%s.txt' % ('v8percentile95',
+    # output_file = '/home1/scratch/agrouaze/kpi_1d_v2/%s/kpi_output_%s_%s_%s.txt' % ('v8percentile95',
+    # sat,wv,end_date.strftime('%Y%m%d'))
+    output_file = '/home/datawork-cersat-public/cache/project/mpc-sentinel1/analysis/s1_data_analysis/kpi/kpi_1d/%s/kpi_output_%s_%s_%s.txt' % ('v8percentile95',
     sat,wv,end_date.strftime('%Y%m%d'))
     if os.path.exists(output_file) and args.overwrite is False:
         logging.info('output %s already exists',output_file)
