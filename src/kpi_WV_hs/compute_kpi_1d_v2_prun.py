@@ -38,9 +38,10 @@ if __name__ == '__main__':
     #sta = datetime.datetime(2019,6,1)
 
     #sta = datetime.datetime(2020,6,1) # pour test 2 qui utilisent les cross assignments de partitions
-    logging.info('start year: %s',sta)
+
     sto = datetime.datetime.today()
     sta = sto - datetime.timedelta(days=20)
+    logging.info('start year: %s', sta)
     #sto = datetime.datetime(2020,9,1)
     fid = open(listing,'w')
     cpt = 0

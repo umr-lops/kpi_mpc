@@ -5,11 +5,20 @@
 #PBS -m n
 echo "Hello ${1} $2 $3"
 pybin=/home1/datawork/agrouaze/conda_envs/py3_dev_datawork/bin/python
-pyexe=/home1/datahome/agrouaze/git/kpi_mpc/src/kpi_WV_nrcs/compute_kpi_1b.py
+myvariable=$(whoami)
 #S1B wv2 YYYYMMDD
-export PYTHONPATH=/home1/datahome/agrouaze/git/kpi_mpc/:$PYTHONPATH
-export PYTHONPATH=/home1/datahome/agrouaze/git/mpc/data_collect/:$PYTHONPATH
-export PYTHONPATH=/home1/datahome/agrouaze/git/mpc/qualitycheck/:$PYTHONPATH
+if [[ "${myvariable}" == "agrouaze" ]]; then
+  echo 'je suis agrouaze'
+  export PYTHONPATH=/home1/datahome/agrouaze/git/kpi_mpc/:$PYTHONPATH
+  export PYTHONPATH=/home1/datahome/agrouaze/git/mpc/data_collect/:$PYTHONPATH
+  export PYTHONPATH=/home1/datahome/agrouaze/git/mpc/qualitycheck/:$PYTHONPATH
+  pyexe=/home1/datahome/agrouaze/git/kpi_mpc/src/kpi_WV_nrcs/compute_kpi_1b.py
+else
+  export PYTHONPATH=/home1/datahome/satwave/sources_en_exploitation2/kpi_mpc/:$PYTHONPATH
+  export PYTHONPATH=/home1/datahome/satwave/sources_en_exploitation2/mpc/data_collect/:$PYTHONPATH
+  export PYTHONPATH=/home1/datahome/satwave/sources_en_exploitation2/mpc/qualitycheck/:$PYTHONPATH
+  pyexe=/home1/datahome/satwave/sources_en_exploitation2/kpi_mpc/src/kpi_WV_nrcs/compute_kpi_1b.py
+fi;
 #$pybin $pyexe --satellite $1 --wv $2 --enddate $3 --version test9 --overwrite
 $pybin $pyexe --satellite $1 --wv $2 --enddate $3 --overwrite
 echo end of python script exe
