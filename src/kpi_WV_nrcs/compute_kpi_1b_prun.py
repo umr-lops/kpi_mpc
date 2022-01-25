@@ -6,6 +6,7 @@ import sys
 print(sys.executable)
 import subprocess
 import logging
+import getpass
 from dateutil import rrule
 import datetime
 if __name__ == '__main__':
@@ -24,7 +25,12 @@ if __name__ == '__main__':
         logging.basicConfig (level=logging.INFO,format='%(asctime)s %(levelname)-5s %(message)s',
                              datefmt='%d/%m/%Y %H:%M:%S')
     prunexe = '/appli/prun/bin/prun'
-    listing = '/home1/scratch/agrouaze/list_kpi_1b_prun.txt' # written below
+    if getpass.getuser() == 'agrouaze':
+        listing = '/home1/scratch/agrouaze/list_kpi_1b_prun.txt' # written below
+        pbs = '/home1/datahome/agrouaze/git/kpi_mpc/src/kpi_WV_nrcs/compute_kpi_1b.pbs'
+    else:
+        listing = '/home1/scratch/satwave/list_kpi_1b_prun.txt'  # written below
+        pbs = '/home1/datahome/satwave/sources_en_exploitation2/kpi_mpc/src/kpi_WV_nrcs/compute_kpi_1b.pbs'
     # call prun
     opts = ' --split-max-lines=3 --background -e '
     listing_content = []
@@ -34,6 +40,7 @@ if __name__ == '__main__':
     #sta = datetime.datetime(2020,6,1) # pour test 2 qui utilisent les cross assignments de partitions
     logging.info('start year: %s',sta)
     sto = datetime.datetime.today()
+    sta = sto - datetime.timedelta(days=20)
     #sto = datetime.datetime(2020,9,1)
     fid = open(listing,'w')
     cpt = 0
@@ -45,7 +52,7 @@ if __name__ == '__main__':
                 cpt +=1
     fid.close()
     logging.info('listing written ; %s nb lines: %s',listing,cpt)
-    pbs = '/home1/datahome/agrouaze/git/kpi_mpc/src/kpi_WV_nrcs/compute_kpi_1b.pbs'
+
     cmd = prunexe+opts+pbs+' '+listing
     logging.info('cmd to cast = %s',cmd)
     st = subprocess.check_call(cmd,shell=True)

@@ -167,7 +167,7 @@ def compute_kpi_1d(sat,wv,dev=False,stop_analysis_period=None,period_analysed_wi
         T = np.max([bias_minus_2sigma,bias_plus_2sigma])
         logging.info('T : %s %s',T.shape,T)
         nb_measu_inside_envelop = (abs(subset_current_period['bias_swh_azc_' + wv])<T).sum().values
-
+        std = np.nanstd(subset_current_period['bias_swh_azc_' + wv]).values
         mean_bias = np.mean(subset_current_period['bias_swh_azc_' + wv]).values
         logging.debug('nb_measu_inside_envelop : %s',nb_measu_inside_envelop)
         kpi_value = 100.*nb_measu_inside_envelop/nb_measu_total
@@ -190,9 +190,10 @@ def compute_kpi_1d(sat,wv,dev=False,stop_analysis_period=None,period_analysed_wi
     else:
         mean_bias = np.nan
         kpi_value = np.nan
+        std = np.nan
         logging.debug('no data for period %s to %s',start_current_month,stop_current_month)
         logging.debug('subset_current_period %s',subset_current_period)
-    return kpi_value,start_current_month,stop_current_month,envelop_value,nb_measu_total,mean_bias
+    return kpi_value,start_current_month,stop_current_month,envelop_value,nb_measu_total,mean_bias,std
 
 
 if __name__ == '__main__':
@@ -236,7 +237,7 @@ if __name__ == '__main__':
         logging.info('output %s already exists',output_file)
     else:
         alternative_L2F = '/home/datawork-cersat-public/project/mpc-sentinel1/analysis/s1_data_analysis/L2_full_daily/0.8/'
-        kpi_v,start_cur_month,stop_cur_month,envelop_val,nbvalused,meanbias = compute_kpi_1d(sat,wv=wv,
+        kpi_v,start_cur_month,stop_cur_month,envelop_val,nbvalused,meanbias,std = compute_kpi_1d(sat,wv=wv,
                                                                         dev=False,stop_analysis_period=end_date,df=None,
                                                                         alternative_L2F=alternative_L2F)
         logging.info('##########')
@@ -249,7 +250,7 @@ if __name__ == '__main__':
         if not os.path.exists(os.path.dirname(output_file)):
             os.makedirs(os.path.dirname(output_file),0o0775)
         fid = open(output_file,'w')
-        fid.write('%s %s %s %s %s %s\n'%(kpi_v,start_cur_month,stop_cur_month,envelop_val,nbvalused,meanbias))
+        fid.write('%s %s %s %s %s %s %s\n'%(kpi_v,start_cur_month,stop_cur_month,envelop_val,nbvalused,meanbias,std))
         fid.close()
         logging.info('output: %s',output_file)
         logging.info('done in %1.3f min',(time.time() - t0) / 60.)
