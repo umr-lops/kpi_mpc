@@ -57,7 +57,7 @@ def compute_kpi_1d(sat,wv,dev=False,stop_analysis_period=None,period_analysed_wi
     note that low freq mask is applied both on S-1 spectrum and WWIII spectrum
     :param sat: str S1A or ..
     :param wv: str wv1 or wv2
-    :param stop_analysis_period: datetime (-> period considered date-1 month : date)
+    :param stop_analysis_period: datetime (-> period considered T-1 month : T)
     :param period_analysed_width : int 30 days by default
     :return:
         kpi_value (float): between 0 and 100 %
