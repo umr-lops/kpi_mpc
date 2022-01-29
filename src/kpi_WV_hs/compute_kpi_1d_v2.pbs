@@ -7,7 +7,7 @@ echo "Hello ${1} $2 $3"
 #S1B wv2 YYYYMMDD
 myvariable=$(whoami)
 pybin=/home1/datawork/agrouaze/conda_envs/py3_dev_datawork/bin/python
-
+pybin=/home/datawork-cersat-public/project/mpc-sentinel1/workspace/conda/envs/xsar_forkJan22/bin/python
 if [[ "${myvariable}" == "agrouaze" ]]; then
   echo 'je suis agrouaze'
 

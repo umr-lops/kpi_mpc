@@ -11,7 +11,7 @@ import numpy as np
 import datetime
 import time
 import xarray
-from read_and_concat_L2F import read_L2F_with_xarray
+from read_and_concat_L2F import read_L2F_with_xarray,get_data_from_L2F
 from src.config import EXTRACTION_SERIES_L2F_FOR_LONGTERM_MONITORING_L2
 POLARIZATION = 'VV'
 MODE = 'WV'
@@ -31,7 +31,7 @@ def load_Level2_series(satellite,start,stop,alternative_L2F=None):
 
 
     logging.info('load L2F data')
-    vv = ['oswQualityFlagPartition1','fdatedt','oswLon','oswLat',
+    vv = ['oswQualityFlagPartition1','fdatedt','oswLon','oswLat','oswHeading',
           's1_effective_hs_2Dcutoff','ecmwf0125_uwind','ecmwf0125_vwind',
           'oswIncidenceAngle','oswLandFlag','dist2coastKM', 'pol','class_1',
           'ww3_effective_2Dcutoff_hs','oswNv','oswNrcs','oswAzCutoff','oswEcmwfWindSpeed',
@@ -45,7 +45,10 @@ def load_Level2_series(satellite,start,stop,alternative_L2F=None):
     ds_dict_sat = read_L2F_with_xarray(start,stop,satellites=[satellite],variables=vv,
                                        alternative_L2F_path=alternative_L2F,
                                        add_ecmwf_wind=True)
+ #   ds_dict_sat = get_data_from_L2F(start, stop, satellites=[satellite], variables=vv, alternative_L2F_path=alternative_L2F,addpolygones=False)
     dswv = ds_dict_sat[satellite]
+    #dswv = xarray.Dataset(dswv)
+    logging.info('dswv type %s',type(dswv))
     if dswv != {}:
         # drop Nan
         dswv = dswv.where(np.isfinite(dswv['s1_effective_hs_2Dcutoff']) & np.isfinite(dswv['ww3_effective_2Dcutoff_hs']),drop=True)
@@ -167,7 +170,7 @@ def compute_kpi_1d(sat,wv,dev=False,stop_analysis_period=None,period_analysed_wi
         T = np.max([bias_minus_2sigma,bias_plus_2sigma])
         logging.info('T : %s %s',T.shape,T)
         nb_measu_inside_envelop = (abs(subset_current_period['bias_swh_azc_' + wv])<T).sum().values
-        std = np.nanstd(subset_current_period['bias_swh_azc_' + wv]).values
+        std = np.nanstd(subset_current_period['bias_swh_azc_' + wv])
         mean_bias = np.mean(subset_current_period['bias_swh_azc_' + wv]).values
         logging.debug('nb_measu_inside_envelop : %s',nb_measu_inside_envelop)
         kpi_value = 100.*nb_measu_inside_envelop/nb_measu_total
