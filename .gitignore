@@ -10,3 +10,4 @@ src/kpi_WV_hs/.ipynb_checkpoints/compute_kpi_1d_v2-checkpoint.pbs
 src/kpi_WV_hs/.ipynb_checkpoints/compute_kpi_1d_v2-checkpoint.py
 *.iml
 .idea/kpi_mpc.iml
+notebooks/.ipynb_checkpoints/display_KPI1b_1d_wrt_time-checkpoint.ipynb
