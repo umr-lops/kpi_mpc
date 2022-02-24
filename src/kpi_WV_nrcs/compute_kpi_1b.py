@@ -10,7 +10,7 @@ import numpy as np
 import datetime
 import time
 from read_aggregated_calbration_SLC_WV_level_netcdf_file_for_nrcs_investigations import read_fat_calib_nc
-
+from src.config import OUTPUTDIR_KPI_1B
 POLARIZATION = 'VV'
 MODE = 'WV'
 #ENVELOP = 2 #sigma
@@ -121,9 +121,7 @@ if __name__ == '__main__':
     # output_file = '/home1/scratch/agrouaze/kpi_1b/%s/kpi_output_%s_%s_%s.txt' % ('v2percentile95',
     #                                                                                 sat, wv,
     #                                                                                 end_date.strftime('%Y%m%d'))
-    output_file = '/home/datawork-cersat-public/cache/project/mpc-sentinel1/analysis/s1_data_analysis/kpi/kpi_1b/%s/kpi_output_%s_%s_%s.txt' % ('v2percentile95',
-                                                                                    sat, wv,
-                                                                                    end_date.strftime('%Y%m%d'))
+    output_file = os.path.join(OUTPUTDIR_KPI_1B,'v2percentile95','kpi_output_%s_%s_%s.txt' % (sat, wv,end_date.strftime('%Y%m%d')))
     if os.path.exists(output_file) and args.overwrite is False:
         logging.info('output %s already exists', output_file)
     else:
