@@ -11,7 +11,7 @@ import numpy as np
 import datetime
 import time
 import xarray
-from read_and_concat_L2F import read_L2F_with_xarray,get_data_from_L2F
+from read_and_concat_L2F import read_L2F_with_xarray
 from src.config import EXTRACTION_SERIES_L2F_FOR_LONGTERM_MONITORING_L2,OUTPUTDIR_KPI_1D
 POLARIZATION = 'VV'
 MODE = 'WV'
