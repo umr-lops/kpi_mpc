@@ -58,7 +58,7 @@ def compute_kpi_1b(sat,wv,stop_analysis_period=None,df_slc_sat=None):
     logging.info('nb_nan : %s',nb_nan)
     logging.info('nb finite %s/%s',np.isfinite(subset_df['direct_diff_calib_cst_db']).sum(),len(subset_df['direct_diff_calib_cst_db']))
     #envelop_value = ENVELOP*np.nanstd(subset_df['direct_diff_calib_cst_db'])
-    std = np.nanstd(subset_df['direct_diff_calib_cst_db'])
+
     envelop_value = np.percentile(abs(subset_df['direct_diff_calib_cst_db']),ENVELOP)
     logging.debug('envelop_value : %s',envelop_value)
 
@@ -75,6 +75,7 @@ def compute_kpi_1b(sat,wv,stop_analysis_period=None,df_slc_sat=None):
     # definition proposee par Hajduch le 10dec2021 screenshot a lappuit (je ne suis pas convaincu pas l introduction du biais dans le calcul de levenveloppe car le KPI sera dautant plus elever que le biais sera fort (cest linverse qui est cherche)
     bias_minus_2sigma = abs(subset_current_period['direct_diff_calib_cst_db'].mean() - envelop_value)
     bias_plus_2sigma = abs(subset_current_period['direct_diff_calib_cst_db'].mean() + envelop_value)
+    std = np.nanstd(subset_current_period['direct_diff_calib_cst_db'])
     logging.info('bias_plus_2sigma %s', bias_plus_2sigma)
     T = np.max([bias_minus_2sigma, bias_plus_2sigma])
     logging.info('T : %s %s', T.shape, T)
