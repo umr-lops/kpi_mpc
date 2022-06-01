@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-Definition of KPI: decided by NORSE+CLS+IFREME
-implementaiton : IFREMER
+Definition of KPI: decided by NORSE+CLS+IFREMER
+implementation : IFREMER
 Dec 2021: after SR#3 + ORR to adjust the KPI
 KPI-1d SLA Vol3 document MPC contract 2021 - 2016
+history:
+    June 22: revision of the envelop definition (to avoid taking the bias twice)
 """
 import os
 import logging
@@ -101,9 +103,9 @@ def compute_kpi_1d(sat,wv,dev=False,stop_analysis_period=None,period_analysed_wi
         dims=['fdatedt'],coords={'fdatedt':df['fdatedt']})
 
 
-    if wv=='wv1':
+    if wv == 'wv1':
         cond_inc = (df['oswIncidenceAngle']<30)
-    elif wv=='wv2':
+    elif wv == 'wv2':
         cond_inc = (df['oswIncidenceAngle'] > 30)
     else:
         raise Exception('wv value un expected : %s'%wv)
@@ -164,10 +166,11 @@ def compute_kpi_1d(sat,wv,dev=False,stop_analysis_period=None,period_analysed_wi
         logging.debug('bias : %s',subset_current_period['bias_swh_azc_' + wv].values)
 
         #definition proposee par Hajduch le 10dec2021 screenshot a lappuit (je ne suis pas convaincu pas l introduction du biais dans le calcul de levenveloppe car le KPI sera dautant plus elever que le biais sera fort (cest linverse qui est cherche)
-        bias_minus_2sigma = abs(subset_current_period['bias_swh_azc_' + wv].mean().values-envelop_value)
-        bias_plus_2sigma = abs(subset_current_period['bias_swh_azc_' + wv].mean().values+envelop_value)
-        logging.info('bias_plus_2sigma %s',bias_plus_2sigma)
-        T = np.max([bias_minus_2sigma,bias_plus_2sigma])
+        #bias_minus_2sigma = abs(subset_current_period['bias_swh_azc_' + wv].mean().values-envelop_value)
+        #bias_plus_2sigma = abs(subset_current_period['bias_swh_azc_' + wv].mean().values+envelop_value)
+        #logging.info('bias_plus_2sigma %s',bias_plus_2sigma)
+        #T = np.max([bias_minus_2sigma,bias_plus_2sigma])
+        T = envelop_value
         logging.info('T : %s %s',T.shape,T)
         nb_measu_inside_envelop = (abs(subset_current_period['bias_swh_azc_' + wv])<T).sum().values
         std = np.nanstd(subset_current_period['bias_swh_azc_' + wv])
