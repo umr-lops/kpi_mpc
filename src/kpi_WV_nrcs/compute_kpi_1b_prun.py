@@ -25,7 +25,7 @@ def write_listing_range_dates(args):
     for unit in ['S1A', 'S1B']:
         for wv in ['wv1', 'wv2']:
             logging.info('%s', unit)
-            for dd in rrule.rrule(rrule.DAILY, dtstart=args.start, until=args.stop):
+            for dd in rrule.rrule(rrule.DAILY, dtstart=args.start, until=args.stop,interval=15):
                 fid.write('%s %s %s\n' % (unit, wv, dd.strftime('%Y%m%d')))
                 cpt += 1
     fid.close()
