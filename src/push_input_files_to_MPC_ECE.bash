@@ -58,6 +58,6 @@ echo 'filename: '$filename_dest
 if [ "$filename_dest" = "none" ]; then
   echo 'nothing to do'
 else
-  echo -e "put $1 upload/.$filename\nrename upload/.$filename upload/$filename_dest" | sftp -q -r -i /home3/homedir7/perso/satwave/.ssh/id_sar_mpc_ece_upload_cls upload@upload.sar-mpc.eu
+  echo -e "put $1 upload/.$filename\nrename upload/.$filename upload/$filename_dest" | sftp -q -r -i /home1/datahome/satwave/.ssh/id_sar_mpc_ece_upload_cls upload@upload.sar-mpc.eu
 fi
 echo 'job finished'
