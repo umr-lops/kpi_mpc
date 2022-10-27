@@ -13,9 +13,9 @@ from dateutil import rrule
 from config import DIR_L2F_WV_DAILY,INPUT_files
 import getpass
 user = getpass.getuser()
-if user=='agrouaze':
+if user == 'agrouaze':
     bash_exe = '/home1/datahome/agrouaze/sources/git/kpi_mpc/src/push_input_files_to_MPC_ECE.bash'
-elif user=='satwave':
+elif user == 'satwave':
     bash_exe = '/home1/datahome/satwave/sources_en_exploitation2/kpi_mpc/src/push_input_files_to_MPC_ECE.bash'
 else:
     raise Exception('user %s is not handle'%user)
