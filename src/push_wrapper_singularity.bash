@@ -15,5 +15,5 @@ echo 'pybin'$pybin
 echo 'exepy'$exepy
 echo 'sing_image'$sing_image
 #-B /home3/homedir7 # not possible on datarmor nodes
-singularity exec  -B /home1/datahome -B /home/datawork-cersat-public -B /home1/datawork -B /home1/scratch  $sing_image $pybin $exepy --kpi $kpiname --startdate $datesta --stopdate $datesto
+/appli/singularity/3.6.4/bin/singularity exec  -B /home1/datahome -B /home/datawork-cersat-public -B /home1/datawork -B /home1/scratch  $sing_image $pybin $exepy --kpi $kpiname --startdate $datesta --stopdate $datesto
 echo done
