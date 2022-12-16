@@ -1,0 +1,11 @@
+Bootstrap: docker
+From: ubuntu:22.04
+
+
+
+%post
+    apt-get -y update && apt-get install -y python3
+    apt install -y ssh
+    systemctl restart ssh
+%runscript
+    python3 -c 'print("Hello World! Hello from our custom Singularity image!")'
