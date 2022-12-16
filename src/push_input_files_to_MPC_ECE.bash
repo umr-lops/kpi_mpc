@@ -55,9 +55,16 @@ else
 fi
 echo 'filename: '$filename_dest
 
+myvariable=$(whoami)
+if [[ "${myvariable}" == "agrouaze" ]]; then
+  filessh=/home3/homedir7/perso/agrouaze/.ssh/id_sar_mpc_ece_upload_cls
+else
+  filessh=/home1/datahome/satwave/.ssh/id_sar_mpc_ece_upload_cls
+fi
+
 if [ "$filename_dest" = "none" ]; then
   echo 'nothing to do'
 else
-  echo -e "put $1 upload/.$filename\nrename upload/.$filename upload/$filename_dest" | sftp -q -r -i /home1/datahome/satwave/.ssh/id_sar_mpc_ece_upload_cls upload@upload.sar-mpc.eu
+  echo -e "put $1 upload/.$filename\nrename upload/.$filename upload/$filename_dest" | sftp -q -r -i $filessh  upload@upload.sar-mpc.eu
 fi
 echo 'job finished'

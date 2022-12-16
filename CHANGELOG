@@ -1,2 +1,4 @@
 # 6 oct 2021
   - add filter on NRCS, WW3 Hs and ECMWF wind speed for kpi-1d
+# 16 dec 2022
+  - add bash scripts to push data to ECE for KPI computation
