@@ -22,7 +22,7 @@ def write_listing_range_dates(args):
     # sto = datetime.datetime(2020,9,1)
     fid = open(listing, 'w')
     cpt = 0
-    for unit in ['S1A', 'S1B']:
+    for unit in ['S1A']:
         for wv in ['wv1', 'wv2']:
             logging.info('%s', unit)
             for dd in rrule.rrule(rrule.DAILY, dtstart=args.start, until=args.stop,interval=15):
@@ -31,7 +31,7 @@ def write_listing_range_dates(args):
     fid.close()
     return cpt
 
-def write_listing_monthly():
+def write_listing_monthly(args):
     fid = open(listing, 'w')
     cpt = 0
     sto = datetime.datetime.today()
