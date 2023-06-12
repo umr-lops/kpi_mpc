@@ -3,9 +3,17 @@ set -e
 # A Grouazel
 # Oct 2022
 echo start
-datesta=$1
-datesto=$2
-kpiname=$3
+kpiname=$1
+datesta=$2
+datesto=$3
+
+if [ -z "$datesta" ]
+then
+  datesta=`date -d ' -5 day' +%Y%m%d`
+  datesto=`date -d ' -0 day' +%Y%m%d`
+fi
+
+
 echo $datesta $datesto
 #module load singularity/3.6.4
 
@@ -25,7 +33,7 @@ else
   echo 'shotname is '$hostna
   singubin=singularity
 fi
-$singubin version
+#$singubin version
 echo 'ok for singularity call'
 $singubin exec -B /home1/datahome -B /home/datawork-cersat-public -B /home1/datawork -B /home1/scratch  $sing_image $pybin $exepy --kpi $kpiname --startdate $datesta --stopdate $datesto
 echo done
