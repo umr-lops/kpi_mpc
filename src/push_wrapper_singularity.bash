@@ -8,9 +8,9 @@ set -e
 # A Grouazel
 # Oct 2022
 echo start
-#kpiname=$1
-#datesta=$2
-#datesto=$3
+kpiname=$1
+datesta=$2
+datesto=$3
 echo "kpiname = $kpiname"
 echo "datesta = $datesta"
 echo "datesto = $datesto"
