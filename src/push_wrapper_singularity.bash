@@ -23,7 +23,8 @@ fi
 ipadress=`ip addr | grep 134`
 echo "IP adress host $ipadress"
 echo $datesta $datesto
-source /usr/share/Modules/3.2.10/init/bash
+#source /usr/share/Modules/3.2.10/init/bash
+source /usr/share/modules/init/bash # found on DGX 101-9
 module load singularity/3.6.4
 echo 'singularity module loaded'
 
