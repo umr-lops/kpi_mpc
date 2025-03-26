@@ -57,7 +57,8 @@ echo 'filename: '$filename_dest
 
 myvariable=$(whoami)
 if [[ "${myvariable}" == "agrouaze" ]]; then
-  filessh=/home3/homedir7/perso/agrouaze/.ssh/id_sar_mpc_ece_upload_cls
+  filessh=/home3/homedir11/perso/agrouaze/.ssh/id_sar_mpc_ece_upload_cls
+  filessh=/home1/datahome/agrouaze/.ssh/id_sar_mpc_ece_upload_cls
 else
   filessh=/home1/datahome/satwave/.ssh/id_sar_mpc_ece_upload_cls
 fi
