@@ -21,7 +21,7 @@ def preprocess_L2F(ds, variables=None, add_ecmwf_wind=True):
     :param variables:
     :return:
     """
-    filee = ds.encoding["source"]
+    # filee = ds.encoding["source"]
     # logging.info(os.path.basename(filee))
     ds = ds.sortby("fdatedt")
     if variables is not None:
@@ -134,6 +134,18 @@ def read_L2F_with_xarray(
                 combine="by_coords",
             )  # , concat_dim='fdatedt')
             ds_dict_sat[sensor] = tmpds
+            logging.info(
+                "elapsed time to read L2F %s files : %1.1f seconds",
+                len(listnc),
+                time.time() - t0,
+            )
+        else:
+            logging.warning(
+                "no L2F files found for satellite %s between %s and %s",
+                sensor,
+                start,
+                stop,
+            )
 
     return ds_dict_sat
 

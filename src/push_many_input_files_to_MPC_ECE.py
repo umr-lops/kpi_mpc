@@ -5,7 +5,6 @@ creation: Sept 2022
 """
 
 import datetime
-import getpass
 import glob
 import logging
 import os
@@ -16,13 +15,9 @@ from dateutil import rrule
 
 from config import DIR_L2F_WV_DAILY, INPUT_files
 
-user = getpass.getuser()
-if user == "agrouaze":
-    bash_exe = "/home1/datahome/agrouaze/sources/git/kpi_mpc/src/push_input_files_to_MPC_ECE.bash"
-elif user == "satwave":
-    bash_exe = "/home1/datahome/satwave/sources_en_exploitation2/kpi_mpc/src/push_input_files_to_MPC_ECE.bash"
-else:
-    raise Exception(f"user {user} is not handle")
+bash_exe = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "push_input_files_to_MPC_ECE.bash")
+)
 
 
 def list_input_files(kpi, start, stop):
@@ -80,7 +75,6 @@ if __name__ == "__main__":
         for handler in root.handlers:
             root.removeHandler(handler)
     import argparse
-    import resource
 
     parser = argparse.ArgumentParser(description="push FTP ECE")
     parser.add_argument("--verbose", action="store_true", default=False)

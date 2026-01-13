@@ -3,6 +3,7 @@ IFREMER
 Oct 2021
 KPI-1d SLA Vol3 document MPC contract 2021 - 2016
 """
+
 import datetime
 import logging
 import os
@@ -35,7 +36,9 @@ def load_Level2_series(satellite):
     component = "osw"
     fpathagg = os.path.join(
         EXTRACTION_SERIES_L2F_FOR_LONGTERM_MONITORING_L2,
-        "{}_{}_longterm_inputdata_from_L2F_{}.nc".format(component, satellite, "fullmission"),
+        "{}_{}_longterm_inputdata_from_L2F_{}.nc".format(
+            component, satellite, "fullmission"
+        ),
     )  # for dev/test last365days
     logging.info(
         "path aggregation = %s exists %s", fpathagg, os.path.exists(fpathagg)
@@ -196,7 +199,9 @@ def compute_kpi_1d(sat, wv, dev=False, stop_analysis_period=None):
             plt.plot(
                 binz[0:-1],
                 hh,
-                label="WWIII {}".format(len(subset_current_period["ww3_effective_2Dcutoff_hs"])),
+                label="WWIII {}".format(
+                    len(subset_current_period["ww3_effective_2Dcutoff_hs"])
+                ),
             )
             hh, _ = np.histogram(
                 subset_current_period["s1_effective_hs_2Dcutoff"], binz
@@ -204,7 +209,9 @@ def compute_kpi_1d(sat, wv, dev=False, stop_analysis_period=None):
             plt.plot(
                 binz[0:-1],
                 hh,
-                label="SAR {}".format(len(subset_current_period["ww3_effective_2Dcutoff_hs"])),
+                label="SAR {}".format(
+                    len(subset_current_period["ww3_effective_2Dcutoff_hs"])
+                ),
             )
             plt.grid(True)
             plt.legend()

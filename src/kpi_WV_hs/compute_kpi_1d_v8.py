@@ -6,6 +6,7 @@ KPI-1d SLA Vol3 document MPC contract 2021 - 2016
 history:
     June 22: revision of the envelop definition (to avoid taking the bias twice)
 """
+
 import datetime
 import logging
 import os
@@ -297,7 +298,9 @@ def compute_kpi_1d(
             plt.plot(
                 binz[0:-1],
                 hh,
-                label="WWIII {}".format(len(subset_current_period["ww3_effective_2Dcutoff_hs"])),
+                label="WWIII {}".format(
+                    len(subset_current_period["ww3_effective_2Dcutoff_hs"])
+                ),
             )
             hh, _ = np.histogram(
                 subset_current_period["s1_effective_hs_2Dcutoff"], binz
@@ -305,7 +308,9 @@ def compute_kpi_1d(
             plt.plot(
                 binz[0:-1],
                 hh,
-                label="SAR {}".format(len(subset_current_period["ww3_effective_2Dcutoff_hs"])),
+                label="SAR {}".format(
+                    len(subset_current_period["ww3_effective_2Dcutoff_hs"])
+                ),
             )
             plt.grid(True)
             plt.legend()

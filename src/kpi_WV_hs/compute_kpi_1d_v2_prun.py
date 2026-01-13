@@ -48,7 +48,9 @@ def write_listing_monthly():
             for dd in rrule.rrule(rrule.MONTHLY, dtstart=sta, until=sto):
                 start, stop = calendar.monthrange(dd.year, dd.month)
                 dd2 = dd.replace(day=stop)
-                fid.write("{} {} {}\n".format(unit, wv, dd2.strftime("%Y%m%d")))
+                fid.write(
+                    "{} {} {}\n".format(unit, wv, dd2.strftime("%Y%m%d"))
+                )
                 cpt += 1
     fid.close()
     return cpt

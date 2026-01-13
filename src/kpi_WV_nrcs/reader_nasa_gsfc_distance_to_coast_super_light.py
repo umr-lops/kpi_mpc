@@ -5,15 +5,15 @@ Nov 2019
 
 import logging
 
-import netCDF4
 import numpy as np
+import xarray as xr
 
 from src.config import RASTER_NASA_COASTLINE
 
-nc = netCDF4.Dataset(RASTER_NASA_COASTLINE)
-DISTANCE_COASTs = nc.variables["distance_to_coast"][:]
-LON_COASTs = nc.variables["lon"][:]
-LAT_COASTs = nc.variables["lat"][:]
+nc = xr.open_dataset(RASTER_NASA_COASTLINE)
+DISTANCE_COASTs = nc["distance_to_coast"].values
+LON_COASTs = nc["lon"].values
+LAT_COASTs = nc["lat"].values
 nc.close()
 
 
@@ -55,6 +55,6 @@ def get_distance_to_coast_vecto(lons, lats):
     indlat[(indlat >= DISTANCE_COASTs.shape[0])] = DISTANCE_COASTs.shape[0] - 1
     indlon[(indlon >= DISTANCE_COASTs.shape[1])] = DISTANCE_COASTs.shape[1] - 1
     dsts = DISTANCE_COASTs[indlat, indlon]
-    diff_lon = lons - LON_COASTs[indlon]
-    diff_lat = lats - LAT_COASTs[indlat]
+    # diff_lon = lons - LON_COASTs[indlon]
+    # diff_lat = lats - LAT_COASTs[indlat]
     return dsts
