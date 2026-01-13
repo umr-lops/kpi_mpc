@@ -10,7 +10,7 @@ import numpy as np
 import datetime
 import time
 import xarray
-from src.config import EXTRACTION_SERIES_L2F_FOR_LONGTERM_MONITORING_L2
+from src.config import EXTRACTION_SERIES_L2F_FOR_LONGTERM_MONITORING_L2, SAR_UNITS
 POLARIZATION = 'VV'
 MODE = 'WV'
 ENVELOP = 2 #sigma
@@ -146,7 +146,7 @@ if __name__ == '__main__':
     time.sleep(np.random.rand(1,1)[0][0]) #to avoid issue with mkdir
     parser = argparse.ArgumentParser (description='kpi-1d')
     parser.add_argument ('--verbose',action='store_true',default=False)
-    parser.add_argument('--satellite',choices=['S1A','S1B'],required=True,help='S-1 unit choice')
+    parser.add_argument('--satellite',choices=SAR_UNITS,required=True,help='S-1 unit choice')
     parser.add_argument('--wv',choices=['wv1','wv2'],required=True,help='WV incidence angle choice')
     parser.add_argument('--enddate',help='end of the 1 month period analysed',required=False,action='store',
                         default=None)
