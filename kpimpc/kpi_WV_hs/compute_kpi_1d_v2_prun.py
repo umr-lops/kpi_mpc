@@ -1,8 +1,9 @@
 #!/scale/project/lops-siam-airflow/envs_exploit/micromamba/py27/bin/python2.7
 """
 """
-import sys
 import os
+import sys
+
 print(sys.executable)
 import calendar
 import datetime

@@ -12,11 +12,11 @@ import os
 import time
 
 import numpy as np
+
+from kpimpc.config import OUTPUTDIR_KPI_1B, SAR_UNITS
 from kpimpc.kpi_WV_nrcs.read_aggregated_calbration_SLC_WV_level_netcdf_file_for_nrcs_investigations import (
     read_fat_calib_nc,
 )
-
-from kpimpc.config import OUTPUTDIR_KPI_1B
 
 POLARIZATION = "VV"
 MODE = "WV"
@@ -136,6 +136,7 @@ def compute_kpi_1b(sat, wv, stop_analysis_period=None, df_slc_sat=None):
         std,
     )
 
+
 def entrypoint():
     root = logging.getLogger()
     if root.handlers:
@@ -156,7 +157,7 @@ def entrypoint():
     )
     parser.add_argument(
         "--satellite",
-        choices=["S1A", "S1B"],
+        choices=SAR_UNITS,
         required=True,
         help="S-1 unit choice",
     )
@@ -172,6 +173,12 @@ def entrypoint():
         required=False,
         action="store",
         default=None,
+    )
+    parser.add_argument(
+        "--outputdir",
+        help="output directory",
+        required=False,
+        default=OUTPUTDIR_KPI_1B,
     )
     args = parser.parse_args()
 
@@ -196,7 +203,7 @@ def entrypoint():
     #                                                                                 sat, wv,
     #                                                                                 end_date.strftime('%Y%m%d'))
     output_file = os.path.join(
-        OUTPUTDIR_KPI_1B,
+        args.outputdir,
         "v2percentile95",
         "kpi_output_{}_{}_{}.txt".format(sat, wv, end_date.strftime("%Y%m%d")),
     )
@@ -245,5 +252,7 @@ def entrypoint():
             resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024.0,
         )
     logging.info("over")
+
+
 if __name__ == "__main__":
     entrypoint()

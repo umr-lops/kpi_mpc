@@ -22,7 +22,7 @@ libs to compute 2 KPIs for MPC Sentinel-1 project:
 
 # usage in python interactive mode
 
->>>import kpimpc
+> > > import kpimpc
 
 # installation
 

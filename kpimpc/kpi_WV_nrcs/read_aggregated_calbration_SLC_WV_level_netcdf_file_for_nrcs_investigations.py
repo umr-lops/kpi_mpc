@@ -4,17 +4,17 @@ import os
 import time
 from datetime import datetime
 
-import compute_wind_azimuth
 import netCDF4
 import numpy as np
-import reader_nasa_gsfc_distance_to_coast_super_light
 import xarray
 
-t0 = time.time()
-from gmf_cmod5n import GMFCmod5n
+import kpimpc.kpi_WV_nrcs.compute_wind_azimuth as compute_wind_azimuth
+import kpimpc.kpi_WV_nrcs.reader_nasa_gsfc_distance_to_coast_super_light as reader_nasa_gsfc
 
+t0 = time.time()
 # first test to look at the content of the daily files SAFE containing the noise and denoised sigma0
 from kpimpc.config import SAR_UNITS, INPUT_files
+from kpimpc.kpi_WV_nrcs.gmf_cmod5n import GMFCmod5n
 
 
 def read_fat_calib_nc(satellite_list=SAR_UNITS):
@@ -64,7 +64,7 @@ def read_fat_calib_nc(satellite_list=SAR_UNITS):
             )
 
             t0 = time.time()
-            dst = reader_nasa_gsfc_distance_to_coast_super_light.get_distance_to_coast_vecto(
+            dst = reader_nasa_gsfc.get_distance_to_coast_vecto(
                 df_slc["_lon_sar"].values, df_slc["_lat_sar"].values
             )
             logging.info(

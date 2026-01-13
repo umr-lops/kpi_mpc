@@ -4,7 +4,7 @@ requires-python = ">= 3.10"
 license = "MIT"
 description = "libraries to compute Key Performance Indicators for Mission Performance Center (Sentinel-1 SAR mission)"
 readme = "README.md"
-authors = [{ name = "Antoine Grouazel" }, ]
+authors = [{ name = "Antoine Grouazel" }]
 dependencies = ["numpy", "xarray", "scipy", "netcdf4"]
 keywords = ["kpi", "mpc", "metrics", "monitoring", "analytics"]
 classifiers = [
@@ -28,8 +28,8 @@ repository = "https://github.com/umr-lops/kpi_mpc.git"
 requires = ["setuptools>=64.0", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools]
-packages = ["kpimpc"]
+[tool.setuptools.packages.find]
+include = ["kpimpc*"]
 
 [tool.setuptools_scm]
 fallback_version = "0.0.0"

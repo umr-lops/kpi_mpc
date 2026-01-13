@@ -1,6 +1,7 @@
 import os
 
-RASTER_NASA_COASTLINE = "/home/datawork-lops-siam/project/cfosat_calval_wwec/data/colocations/NASA_tiff_distance_to_coast_converted_v2.nc"
+# RASTER_NASA_COASTLINE = "/home/datawork-lops-siam/project/cfosat_calval_wwec/data/colocations/NASA_tiff_distance_to_coast_converted_v2.nc"
+RASTER_NASA_COASTLINE = "/home/datawork-cersat-public/cache/project/mpc-sentinel1/data/ancillary/NASA_tiff_distance_to_coast_converted_v3.nc"
 DIR_INPUT = "/home/datawork-cersat-public/cache/project/mpc-sentinel1/analysis/s1_data_analysis/L1_v16/WV"
 INPUT_files = os.path.join(
     DIR_INPUT,

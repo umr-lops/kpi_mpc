@@ -38,12 +38,13 @@
 """
 
 import numpy as np
-from gmf_base import GMFBase
+
+from kpimpc.kpi_WV_nrcs.gmf_base import GMFBase
 
 
 class GMFCmod5n(GMFBase):
     def __init__(self):
-        super(GMFCmod5n).__init__("CMOD5n", "C", "VV")
+        super(GMFCmod5n, self).__init__("CMOD5n", "C", "VV")
         self._name = "CMOD5n"
         self.vmax = 50.0
         self.nb_sol = 2
@@ -160,12 +161,12 @@ class GMFCmod5n(GMFBase):
 
 class GMFCmod5h(GMFCmod5n):
     def __init__(self):
-        super(GMFCmod5h).__init__()
+        super(GMFCmod5h, self).__init__()
         self._name = "CMOD5h"
 
     def getNRCS(self, inc_angle, wind_speed, wind_dir):
 
-        B0, B1, B2 = super(GMFCmod5h).returnB(inc_angle, wind_speed)
+        B0, B1, B2 = super(GMFCmod5h, self).returnB(inc_angle, wind_speed)
         theta = np.array(inc_angle)
         V = np.array(wind_speed)
         phi = np.array(wind_dir)

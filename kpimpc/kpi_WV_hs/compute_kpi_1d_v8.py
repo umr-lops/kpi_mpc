@@ -14,9 +14,9 @@ import time
 
 import numpy as np
 import xarray
-from kpimpc.kpi_WV_hs.read_and_concat_L2F import read_L2F_with_xarray
 
 from kpimpc.config import OUTPUTDIR_KPI_1D, SAR_UNITS
+from kpimpc.kpi_WV_hs.read_and_concat_L2F import read_L2F_with_xarray
 
 POLARIZATION = "VV"
 MODE = "WV"
@@ -336,6 +336,7 @@ def compute_kpi_1d(
         std,
     )
 
+
 def entrypoint():
     root = logging.getLogger()
     if root.handlers:
@@ -450,6 +451,7 @@ def entrypoint():
             resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024.0,
         )
     logging.info("end")
+
 
 if __name__ == "__main__":
     entrypoint()
