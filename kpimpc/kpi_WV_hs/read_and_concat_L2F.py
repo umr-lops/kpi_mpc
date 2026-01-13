@@ -74,6 +74,7 @@ def read_L2F_with_xarray(
     variables=None,
     alternative_L2F_path=None,
     add_ecmwf_wind=True,
+    developer_mode=False,
 ):
     """
 
@@ -83,6 +84,8 @@ def read_L2F_with_xarray(
     :param variables: list of str or None
     :param alternative_L2F_path: str or None path to alternative L2F directory
     :param add_ecmwf_wind :bool True -> add ecmwf wind speed variable
+    :param developer_mode: bool True -> reduce number of files read for fast test
+
     :return:
         ds_dict_sat: dict of xarray.Dataset keyed by satellite name
     """
@@ -120,6 +123,9 @@ def read_L2F_with_xarray(
             if datdt >= start and datdt <= stop and datdt not in dates:
                 listnc.append(ff)
                 dates.append(datdt)
+            if developer_mode and len(listnc) >= 3:
+                logging.info("developer_mode ON break after 3 files")
+                break
         logging.info("nb files found without date filter = %s", len(listnc0))
         logging.info("nb files found with date filter = %s", len(listnc))
         for kk in listnc:
@@ -132,6 +138,7 @@ def read_L2F_with_xarray(
                 preprocess=lambda ds: preprocess_L2F(
                     ds, variables, add_ecmwf_wind
                 ),
+                engine='h5netcdf',
                 combine="by_coords",
             )  # , concat_dim='fdatedt')
             ds_dict_sat[sensor] = tmpds

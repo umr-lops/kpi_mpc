@@ -29,13 +29,14 @@ MS = {"wv1": -6.5, "wv2": -15.0}  # NRCS central values dB
 DS = {"wv1": 3, "wv2": 5}  # delta
 
 
-def load_Level2_series(satellite, start, stop, alternative_L2F=None):
+def load_Level2_series(satellite, start, stop, alternative_L2F=None,dev=False):
     """
 
     :param satellite: str S1A or ...
     :param start: datetime
     :param stop: datetime
     :param alternative_L2F: str or None path to alternative L2F directory
+    :param dev: bool True -> development mode (reduce number of data analyzed)
 
     :return:
         dswv: xarray.Dataset with L2F data for the given satellite between start and stop
@@ -85,6 +86,7 @@ def load_Level2_series(satellite, start, stop, alternative_L2F=None):
         variables=vv,
         alternative_L2F_path=alternative_L2F,
         add_ecmwf_wind=True,
+        developer_mode=dev,
     )
     #   ds_dict_sat = get_data_from_L2F(start, stop, satellites=[satellite], variables=vv, alternative_L2F_path=alternative_L2F,addpolygones=False)
     dswv = ds_dict_sat[satellite]
@@ -142,9 +144,11 @@ def compute_kpi_1d(
     note that low freq mask is applied both on S-1 spectrum and WWIII spectrum
     :param sat: str S1A or ..
     :param wv: str wv1 or wv2
+    :param dev: bool True -> development mode (reduce number of data analyzed)
     :param stop_analysis_period: datetime (-> period considered T-1 month : T)
     :param period_analysed_width : int 30 days by default
     :param ds: xarray.Dataset or None if None the function load the data
+    :param alternative_L2F: str or None path to alternative L2F directory [ optional]
 
     :return:
         kpi_value (float): between 0 and 100 %
@@ -176,6 +180,7 @@ def compute_kpi_1d(
             start=start_prior_period,
             stop=stop_current_month,
             alternative_L2F=alternative_L2F,
+            dev=dev,
         )
 
     logging.debug("start_current_month : %s", start_current_month)
@@ -320,38 +325,38 @@ def compute_kpi_1d(
             logging.debug("nb_measu_inside_envelop : %s", nb_measu_inside_envelop)
             kpi_value = 100.0 * nb_measu_inside_envelop / nb_measu_total
             logging.debug("kpi_value : %s", kpi_value)
-            if dev:
-                from matplotlib import pyplot as plt
+            # if dev:
+            #     from matplotlib import pyplot as plt
 
-                plt.figure()
-                binz = np.arange(0, 10, 0.1)
-                hh, _ = np.histogram(
-                    subset_current_period["ww3_effective_2Dcutoff_hs"], binz
-                )
-                plt.plot(
-                    binz[0:-1],
-                    hh,
-                    label="WWIII {}".format(
-                        len(subset_current_period["ww3_effective_2Dcutoff_hs"])
-                    ),
-                )
-                hh, _ = np.histogram(
-                    subset_current_period["s1_effective_hs_2Dcutoff"], binz
-                )
-                plt.plot(
-                    binz[0:-1],
-                    hh,
-                    label="SAR {}".format(
-                        len(subset_current_period["ww3_effective_2Dcutoff_hs"])
-                    ),
-                )
-                plt.grid(True)
-                plt.legend()
-                plt.xlabel("Hs (m)")
-                output = "/home1/scratch/agrouaze/test_histo_kpi_1d.png"
-                plt.savefig(output)
-                logging.debug("png test : %s", output)
-                # plt.show()
+            #     plt.figure()
+            #     binz = np.arange(0, 10, 0.1)
+            #     hh, _ = np.histogram(
+            #         subset_current_period["ww3_effective_2Dcutoff_hs"], binz
+            #     )
+            #     plt.plot(
+            #         binz[0:-1],
+            #         hh,
+            #         label="WWIII {}".format(
+            #             len(subset_current_period["ww3_effective_2Dcutoff_hs"])
+            #         ),
+            #     )
+            #     hh, _ = np.histogram(
+            #         subset_current_period["s1_effective_hs_2Dcutoff"], binz
+            #     )
+            #     plt.plot(
+            #         binz[0:-1],
+            #         hh,
+            #         label="SAR {}".format(
+            #             len(subset_current_period["ww3_effective_2Dcutoff_hs"])
+            #         ),
+            #     )
+            #     plt.grid(True)
+            #     plt.legend()
+            #     plt.xlabel("Hs (m)")
+            #     output = "/home1/scratch/agrouaze/test_histo_kpi_1d.png"
+            #     plt.savefig(output)
+            #     logging.debug("png test : %s", output)
+            #     # plt.show()
         else:
             logging.debug(
                 "no data for period %s to %s",
@@ -420,6 +425,10 @@ def entrypoint():
         required=False,
         default=OUTPUTDIR_KPI_1D,
     )
+    parser.add_argument(
+        "--dev", action="store_true", default=False,
+          help="development mode (reduce number of data analyzed)", required=False
+    )
     args = parser.parse_args()
 
     fmt = "%(asctime)s %(levelname)s %(filename)s(%(lineno)d) %(message)s"
@@ -461,7 +470,7 @@ def entrypoint():
         ) = compute_kpi_1d(
             sat,
             wv=wv,
-            dev=False,
+            dev=args.dev,
             stop_analysis_period=end_date,
             ds=None,
             alternative_L2F=alternative_L2F,
