@@ -138,7 +138,7 @@ def read_L2F_with_xarray(
                 preprocess=lambda ds: preprocess_L2F(
                     ds, variables, add_ecmwf_wind
                 ),
-                engine='h5netcdf',
+                engine="h5netcdf",
                 combine="by_coords",
             )  # , concat_dim='fdatedt')
             ds_dict_sat[sensor] = tmpds

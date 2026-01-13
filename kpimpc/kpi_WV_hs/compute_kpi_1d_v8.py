@@ -29,7 +29,9 @@ MS = {"wv1": -6.5, "wv2": -15.0}  # NRCS central values dB
 DS = {"wv1": 3, "wv2": 5}  # delta
 
 
-def load_Level2_series(satellite, start, stop, alternative_L2F=None,dev=False):
+def load_Level2_series(
+    satellite, start, stop, alternative_L2F=None, dev=False
+):
     """
 
     :param satellite: str S1A or ...
@@ -91,15 +93,22 @@ def load_Level2_series(satellite, start, stop, alternative_L2F=None,dev=False):
     #   ds_dict_sat = get_data_from_L2F(start, stop, satellites=[satellite], variables=vv, alternative_L2F_path=alternative_L2F,addpolygones=False)
     dswv = ds_dict_sat[satellite]
     # reduce to range of dates using isel
-    logging.info('chosen dates are from %s to %s',start,stop)
-    logging.info('available WV fdatedt min %s max %s',dswv['fdatedt'].min().values,dswv['fdatedt'].max().values)
+    logging.info("chosen dates are from %s to %s", start, stop)
+    logging.info(
+        "available WV fdatedt min %s max %s",
+        dswv["fdatedt"].min().values,
+        dswv["fdatedt"].max().values,
+    )
     ivalid = np.where(
         (dswv["fdatedt"].values >= np.datetime64(start))
         & (dswv["fdatedt"].values <= np.datetime64(stop))
     )[0]
     dswv = dswv.isel(fdatedt=ivalid)
-    logging.info("number of L2F data loaded in the period considered: %s", len(dswv["fdatedt"]))
-    dswv = dswv.load() # to allow boolean indexing
+    logging.info(
+        "number of L2F data loaded in the period considered: %s",
+        len(dswv["fdatedt"]),
+    )
+    dswv = dswv.load()  # to allow boolean indexing
     # dswv = xarray.Dataset(dswv)
     logging.debug("dswv type %s", type(dswv))
     if dswv != {}:
@@ -111,23 +120,24 @@ def load_Level2_series(satellite, start, stop, alternative_L2F=None,dev=False):
         )
     return dswv
 
+
 def results_when_no_data():
     """
     to return default values when no data is available for the period
-    
+
     """
     mean_bias = np.nan
     kpi_value = np.nan
     std = np.nan
     envelop_value = np.nan
     nb_measu_total = 0
-    return (kpi_value,
+    return (
+        kpi_value,
         envelop_value,
         nb_measu_total,
         mean_bias,
-        std,)
-
-      
+        std,
+    )
 
 
 def compute_kpi_1d(
@@ -156,11 +166,13 @@ def compute_kpi_1d(
         stop_current_month (datetime):
         envelop_value : (float) 2-sigma m threshold based on 3 months prior period
     """
-    (kpi_value,
+    (
+        kpi_value,
         envelop_value,
         nb_measu_total,
         mean_bias,
-        std,) = results_when_no_data()
+        std,
+    ) = results_when_no_data()
     # compute the 2 sigma envelopp on the last 3 months prior to current month
     if stop_analysis_period is None:
         stop_current_month = datetime.datetime.today()
@@ -278,7 +290,9 @@ def compute_kpi_1d(
             ds["fdatedt"] <= stop_current_month64
         )
         logging.debug("current_date_cond %s", current_date_cond.values.sum())
-        logging.debug("ocean_acqui_filters %s", ocean_acqui_filters.values.sum())
+        logging.debug(
+            "ocean_acqui_filters %s", ocean_acqui_filters.values.sum()
+        )
         mask_current_month = ocean_acqui_filters & current_date_cond
         logging.debug("mask_current_month %s", mask_current_month.values.sum())
         subset_current_period = ds.where(mask_current_month, drop=True)
@@ -303,7 +317,8 @@ def compute_kpi_1d(
                 np.nanmin(subset_current_period["s1_effective_hs_2Dcutoff"]),
             )
             logging.debug(
-                "nb pts current month : %s", len(subset_current_period["fdatedt"])
+                "nb pts current month : %s",
+                len(subset_current_period["fdatedt"]),
             )
             nb_measu_total = len(subset_current_period["fdatedt"])
             logging.debug(
@@ -318,11 +333,17 @@ def compute_kpi_1d(
             T = envelop_value
             logging.info("T : %s %s", T.shape, T)
             nb_measu_inside_envelop = (
-                (abs(subset_current_period["bias_swh_azc_" + wv]) < T).sum().values
+                (abs(subset_current_period["bias_swh_azc_" + wv]) < T)
+                .sum()
+                .values
             )
             std = np.nanstd(subset_current_period["bias_swh_azc_" + wv])
-            mean_bias = np.mean(subset_current_period["bias_swh_azc_" + wv]).values
-            logging.debug("nb_measu_inside_envelop : %s", nb_measu_inside_envelop)
+            mean_bias = np.mean(
+                subset_current_period["bias_swh_azc_" + wv]
+            ).values
+            logging.debug(
+                "nb_measu_inside_envelop : %s", nb_measu_inside_envelop
+            )
             kpi_value = 100.0 * nb_measu_inside_envelop / nb_measu_total
             logging.debug("kpi_value : %s", kpi_value)
             # if dev:
@@ -426,8 +447,11 @@ def entrypoint():
         default=OUTPUTDIR_KPI_1D,
     )
     parser.add_argument(
-        "--dev", action="store_true", default=False,
-          help="development mode (reduce number of data analyzed)", required=False
+        "--dev",
+        action="store_true",
+        default=False,
+        help="development mode (reduce number of data analyzed)",
+        required=False,
     )
     args = parser.parse_args()
 

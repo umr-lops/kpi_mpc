@@ -5,7 +5,7 @@ license = "MIT"
 description = "libraries to compute Key Performance Indicators for Mission Performance Center (Sentinel-1 SAR mission)"
 readme = "README.md"
 authors = [{ name = "Antoine Grouazel" }]
-dependencies = ["numpy", "xarray", "scipy", "netcdf4", 'h5netcdf']
+dependencies = ["numpy", "xarray", "scipy", "netcdf4", 'h5netcdf', 'dask']
 keywords = ["kpi", "mpc", "metrics", "monitoring", "analytics"]
 classifiers = [
   "Development Status :: 4 - Beta",
