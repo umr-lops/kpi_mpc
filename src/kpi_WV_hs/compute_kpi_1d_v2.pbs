@@ -14,7 +14,7 @@ if [[ "${myvariable}" == "agrouaze" ]]; then
   export PYTHONPATH=/home1/datahome/agrouaze/git/kpi_mpc/:$PYTHONPATH
   export PYTHONPATH=/home1/datahome/agrouaze/git/mpc/data_collect/:$PYTHONPATH
   export PYTHONPATH=/home1/datahome/agrouaze/git/mpc/qualitycheck/:$PYTHONPATH
-  pyexe=/home1/datahome/agrouaze/git/kpi_mpc/src/kpi_WV_hs/compute_kpi_1d_v2.py
+  # pyexe=/home1/datahome/agrouaze/git/kpi_mpc/src/kpi_WV_hs/compute_kpi_1d_v2.py
   pyexe=/home1/datahome/agrouaze/git/kpi_mpc/src/kpi_WV_hs/compute_kpi_1d_v8.py
 else
   echo 'je suis : '$myvariable

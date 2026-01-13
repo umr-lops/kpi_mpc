@@ -1,0 +1,110 @@
+[project]
+name = "kpimpc"
+requires-python = ">= 3.10"
+license = "MIT"
+description = "libraries to compute Key Performance Indicators for Mission Performance Center (Sentinel-1 SAR mission)"
+readme = "README.md"
+dependencies = ["numpy", "xarray", "scipy","netcdf4"]
+keywords = [
+  "kpi",
+  "mpc",
+  "metrics",
+  "monitoring",
+  "analytics",
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Intended Audience :: Science/Research",
+  "Topic :: Scientific/Engineering",
+]
+dynamic = ["version"]
+
+[tool.poetry]
+name = "kpimpc"
+version = "0.0.1"
+description = "libraries to compute Key Performance Indicators for Mission Performance Center (Sentinel-1 SAR mission)"
+license = "MIT"
+authors = ["Antoine Grouazel <antoine.grouazel@ifremer.fr>"]
+readme = "README.md"
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+]
+exclude = ["tests"]
+
+[tool.poetry.dependencies]
+python = ">=3.10"
+numpy = "*"
+pandas = "*"
+tqdm = "*"
+
+[project.urls]
+homepage = ""
+documentation = ""
+repository = "https://github.com/umr-lops/kpi_mpc.git"
+changelog = ""
+
+[build-system]
+requires = ["setuptools>=64.0", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["kpimpc"]
+
+[tool.setuptools_scm]
+fallback_version = "0.0.0"
+
+[tool.isort]
+profile = "black"
+skip_gitignore = true
+float_to_top = true
+default_section = "THIRDPARTY"
+known_first_party = "kpimpc"
+
+[tool.black]
+line-length = 79
+
+[tool.coverage.run]
+source = ["kpimpc"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+exclude_lines = ["pragma: no cover", "if TYPE_CHECKING"]
+
+[tool.ruff.lint]
+ignore = [
+  "E402",
+  "E501",
+  "E731",
+  "UP038",
+]
+select = [
+  "F",
+  "E",
+  "I",
+  "UP",
+  "TID",
+  "W",
+]
+extend-safe-fixes = [
+  "TID252",
+  "UP031",
+]
+fixable = ["I", "TID252", "UP"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["kpimpc"]
+known-third-party = ["xarray", "toolz", "construct"]
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "all"
