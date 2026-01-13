@@ -14,11 +14,15 @@ libs to compute 2 KPIs for MPC Sentinel-1 project:
 
     2021
 
-# usage
+# usage in command-line
 
     kpihs -h
     # or
     kpinrcs -h
+
+# usage in python interactive mode
+
+>>>import kpimpc
 
 # installation
 
