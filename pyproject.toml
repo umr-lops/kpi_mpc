@@ -4,6 +4,7 @@ requires-python = ">= 3.10"
 license = "MIT"
 description = "libraries to compute Key Performance Indicators for Mission Performance Center (Sentinel-1 SAR mission)"
 readme = "README.md"
+authors = [{ name = "Antoine Grouazel" }, ]
 dependencies = ["numpy", "xarray", "scipy", "netcdf4"]
 keywords = ["kpi", "mpc", "metrics", "monitoring", "analytics"]
 classifiers = [
@@ -17,35 +18,11 @@ classifiers = [
   "Topic :: Scientific/Engineering",
 ]
 dynamic = ["version"]
-
-[tool.poetry]
-name = "kpimpc"
-version = "0.0.1"
-description = "libraries to compute Key Performance Indicators for Mission Performance Center (Sentinel-1 SAR mission)"
-license = "MIT"
-authors = ["Antoine Grouazel <antoine.grouazel@ifremer.fr>"]
-readme = "README.md"
-classifiers = [
-  "Development Status :: 4 - Beta",
-  "Operating System :: OS Independent",
-  "Programming Language :: Python",
-  "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.10",
-  "Programming Language :: Python :: 3.11",
-]
-exclude = ["tests"]
-
-[tool.poetry.dependencies]
-python = ">=3.10"
-numpy = "*"
-pandas = "*"
-tqdm = "*"
-
 [project.urls]
-homepage = ""
-documentation = ""
+# homepage = ""
+# documentation = ""
 repository = "https://github.com/umr-lops/kpi_mpc.git"
-changelog = ""
+# changelog = ""
 
 [build-system]
 requires = ["setuptools>=64.0", "setuptools-scm"]
@@ -87,3 +64,8 @@ known-third-party = ["xarray", "toolz", "construct"]
 
 [tool.ruff.lint.flake8-tidy-imports]
 ban-relative-imports = "all"
+
+
+[project.scripts]
+kpihs = "kpimpc.kpi_WV_hs.compute_kpi_1d_v8:entrypoint"
+kpinrcs = "kpimpc.kpi_WV_nrcs.compute_kpi_1b:entrypoint"

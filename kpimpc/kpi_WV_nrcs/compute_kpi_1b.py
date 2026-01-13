@@ -12,7 +12,7 @@ import os
 import time
 
 import numpy as np
-from read_aggregated_calbration_SLC_WV_level_netcdf_file_for_nrcs_investigations import (
+from kpimpc.kpi_WV_nrcs.read_aggregated_calbration_SLC_WV_level_netcdf_file_for_nrcs_investigations import (
     read_fat_calib_nc,
 )
 
@@ -136,8 +136,7 @@ def compute_kpi_1b(sat, wv, stop_analysis_period=None, df_slc_sat=None):
         std,
     )
 
-
-if __name__ == "__main__":
+def entrypoint():
     root = logging.getLogger()
     if root.handlers:
         for handler in root.handlers:
@@ -246,3 +245,5 @@ if __name__ == "__main__":
             resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024.0,
         )
     logging.info("over")
+if __name__ == "__main__":
+    entrypoint()

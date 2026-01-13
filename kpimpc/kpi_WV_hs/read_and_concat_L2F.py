@@ -11,7 +11,7 @@ import time
 import numpy as np
 import xarray
 
-from src.config import DIR_L2F_WV_DAILY, SAR_UNITS
+from kpimpc.config import DIR_L2F_WV_DAILY, SAR_UNITS
 
 
 def preprocess_L2F(ds, variables=None, add_ecmwf_wind=True):

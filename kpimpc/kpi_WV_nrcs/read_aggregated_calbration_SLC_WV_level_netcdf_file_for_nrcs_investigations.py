@@ -14,7 +14,7 @@ t0 = time.time()
 from gmf_cmod5n import GMFCmod5n
 
 # first test to look at the content of the daily files SAFE containing the noise and denoised sigma0
-from kpimpc.config import INPUT_files, SAR_UNITS
+from kpimpc.config import SAR_UNITS, INPUT_files
 
 
 def read_fat_calib_nc(satellite_list=SAR_UNITS):

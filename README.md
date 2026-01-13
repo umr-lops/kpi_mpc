@@ -2,8 +2,8 @@
 
 libs to compute 2 KPIs for MPC Sentinel-1 project:
 
-- a) WV VV effective Hs bias (wrt WW3)
-- b) WV VV NRCS (denoised) bias (wrt CMOD-5n)
+- a) WV VV effective Hs bias (wrt WW3) called KPI-1d
+- b) WV VV NRCS (denoised) bias (wrt CMOD-5n) called KPI-1b
 
 # author:
 
@@ -16,7 +16,9 @@ libs to compute 2 KPIs for MPC Sentinel-1 project:
 
 # usage
 
-    python ./src/kpi_WV_nrcs/compute_kpi_1b.py --verbose
+    kpihs -h
+    # or
+    kpinrcs -h
 
 # installation
 
@@ -26,7 +28,8 @@ conda activate kpi_conda_env
 conda install numpy scipy matplotlib xarray netCDF4 ipykernel
 git clone https://gitlab.ifremer.fr/lops-wave/kpi_mpc.git
 cd kpi_mpc
-python setup.py install
+# python setup.py install
+pip install .
 ```
 
 #data dependencies:

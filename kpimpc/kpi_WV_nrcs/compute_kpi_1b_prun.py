@@ -1,6 +1,7 @@
 #!/scale/project/lops-siam-airflow/envs_exploit/micromamba/py27/bin/python2.7
 """
 """
+import os
 import sys
 
 print(sys.executable)
@@ -11,7 +12,9 @@ import logging
 import subprocess
 
 from dateutil import rrule
+
 from kpimpc.config import SAR_UNITS
+
 
 def write_listing_range_dates(args):
     # sta = datetime.datetime(2015,1,1)
@@ -37,7 +40,7 @@ def write_listing_range_dates(args):
     return cpt
 
 
-def write_listing_monthly():
+def write_listing_monthly(args):
     fid = open(listing, "w")
     cpt = 0
     sto = datetime.datetime.today()
@@ -102,17 +105,16 @@ if __name__ == "__main__":
             datefmt="%d/%m/%Y %H:%M:%S",
         )
     prunexe = "/appli/prun/bin/prun"
-    if getpass.getuser() == "agrouaze":
-        listing = "/home1/scratch/agrouaze/list_kpi_1d_v2_prun_test.txt"  # written below
-        pbs = "/home1/datahome/agrouaze/git/kpi_mpc/src/kpi_WV_hs/compute_kpi_1d_v2.pbs"
-    else:
-        listing = (
-            "/home1/scratch/satwave/list_kpi_1d_v2_prun.txt"  # written below
-        )
-        pbs = "/home1/datahome/satwave/sources_en_exploitation2/kpi_mpc/src/kpi_WV_hs/compute_kpi_1d_v2.pbs"
+    listing = os.path.join(
+        "/home1/scratch/", getpass.getuser(), "list_kpi_1b_prun.txt"
+    )  # written below
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    pbs = os.path.join(current_dir, "compute_kpi_1b.pbs")
     # call prun
     opts = " --split-max-lines=3 --background -e "
+
     cpt = args.func(args)
+
     logging.info("listing written ; %s nb lines: %s", listing, cpt)
 
     cmd = prunexe + opts + pbs + " " + listing

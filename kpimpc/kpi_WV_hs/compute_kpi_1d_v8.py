@@ -14,7 +14,7 @@ import time
 
 import numpy as np
 import xarray
-from read_and_concat_L2F import read_L2F_with_xarray
+from kpimpc.kpi_WV_hs.read_and_concat_L2F import read_L2F_with_xarray
 
 from kpimpc.config import OUTPUTDIR_KPI_1D, SAR_UNITS
 
@@ -156,7 +156,7 @@ def compute_kpi_1d(
             _swh_azc_mod[ind_bad_ww3],
         )
     logging.debug("max Hs WW3 : %s", np.nanmax(_swh_azc_mod))
-    _swh_azc_s1 = df["s1_effective_hs_2Dcutoff"].values
+    # _swh_azc_s1 = df["s1_effective_hs_2Dcutoff"].values
 
     df["bias_swh_azc_" + wv] = xarray.DataArray(
         df["oswXA_hs_ww3spec_firstSARpartition"].values[:, 0]
@@ -336,8 +336,7 @@ def compute_kpi_1d(
         std,
     )
 
-
-if __name__ == "__main__":
+def entrypoint():
     root = logging.getLogger()
     if root.handlers:
         for handler in root.handlers:
@@ -451,3 +450,6 @@ if __name__ == "__main__":
             resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024.0,
         )
     logging.info("end")
+
+if __name__ == "__main__":
+    entrypoint()

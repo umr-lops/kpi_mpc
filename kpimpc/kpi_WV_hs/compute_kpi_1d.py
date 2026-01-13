@@ -12,7 +12,7 @@ import time
 import numpy as np
 import xarray
 
-from src.config import (
+from kpimpc.config import (
     EXTRACTION_SERIES_L2F_FOR_LONGTERM_MONITORING_L2,
     SAR_UNITS,
 )

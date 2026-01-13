@@ -29,15 +29,9 @@ module load singularity/3.6.4
 echo 'singularity module loaded'
 
 pybin=/home/datawork-cersat-public/project/mpc-sentinel1/workspace/mamba/envs/xsar_oct22/bin/python
-
-myvariable=$(whoami)
-if [[ "${myvariable}" == "agrouaze" ]]; then
-    echo 'je suis agrouaze'
-    exepy=/home1/datahome/agrouaze/git/kpi_mpc/src/push_many_input_files_to_MPC_ECE.py
-else
-   echo 'je suis '$(whoami)
-   exepy=/home1/datahome/satwave/sources_en_exploitation2/kpi_mpc/src/push_many_input_files_to_MPC_ECE.py
-fi;
+# get full absolute path of the python script using readlink -f
+exepy=`readlink -f ./push_many_input_files_to_MPC_ECE.py`
+# exepy='./push_many_input_files_to_MPC_ECE.py'
 sing_image=/home/datawork-cersat-public/project/mpc-sentinel1/workspace/singularity/push_input_KPI_to_ECE/image_ubuntu22.04.sif
 echo 'pybin'$pybin
 echo 'exepy'$exepy
