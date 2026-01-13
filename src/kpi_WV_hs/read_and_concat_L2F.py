@@ -9,8 +9,7 @@ import logging
 import datetime
 import numpy as np
 import os
-import resource
-from src.config import DIR_L2F_WV_DAILY
+from src.config import DIR_L2F_WV_DAILY, SAR_UNITS
 
 
 def preprocess_L2F(ds, variables=None, add_ecmwf_wind=True):
@@ -58,16 +57,16 @@ def preprocess_L2F(ds, variables=None, add_ecmwf_wind=True):
     return ds
 
 
-def read_L2F_with_xarray(start, stop, satellites=['S1A', 'S1B'], variables=None, alternative_L2F_path=None,
+def read_L2F_with_xarray(start, stop, satellites=SAR_UNITS, variables=None, alternative_L2F_path=None,
                          add_ecmwf_wind=True):
     """
 
-    :param start:
-    :param stop:
-    :param satellites:
-    :param variables:
-    :param alternative_L2F_path:
-    :param add_ecmwf_wind :bool
+    :param start: datetime.date or datetime.datetime
+    :param stop: datetime.date or datetime.datetime
+    :param satellites: list of str e.g. ['S1A','S1B']
+    :param variables: list of str or None 
+    :param alternative_L2F_path: str or None path to alternative L2F directory
+    :param add_ecmwf_wind :bool True -> add ecmwf wind speed variable
     :return:
     """
     if isinstance(start, datetime.date):
@@ -137,8 +136,8 @@ if __name__ == '__main__':
                  'wind_speed_model_u',
                  'wind_speed_model_v', 'ecmwf0125_uwind', 'ecmwf0125_vwind', 'rvlNrcsGridmean', 'class_1']
     test_vars = None
-    sat = ['S1A', 'S1B']
-    ds_sat = read_L2F_with_xarray(start, stop, satellites=['S1A', 'S1B'], variables=None, alternative_L2F_path=None,
+    sat = SAR_UNITS
+    ds_sat = read_L2F_with_xarray(start, stop, satellites=sat, variables=None, alternative_L2F_path=None,
                          add_ecmwf_wind=True)
     logging.info(ds_sat.keys())
     logging.info('var = %s', ds_sat[sat[0]].keys())
