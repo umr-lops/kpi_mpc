@@ -16,7 +16,7 @@ from read_aggregated_calbration_SLC_WV_level_netcdf_file_for_nrcs_investigations
     read_fat_calib_nc,
 )
 
-from src.config import OUTPUTDIR_KPI_1B
+from kpimpc.config import OUTPUTDIR_KPI_1B
 
 POLARIZATION = "VV"
 MODE = "WV"

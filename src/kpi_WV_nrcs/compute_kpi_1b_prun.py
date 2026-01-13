@@ -12,7 +12,7 @@ import logging
 import subprocess
 
 from dateutil import rrule
-
+from kpimpc.config import SAR_UNITS
 
 def write_listing_range_dates(args):
     # sta = datetime.datetime(2015,1,1)
@@ -26,7 +26,7 @@ def write_listing_range_dates(args):
     # sto = datetime.datetime(2020,9,1)
     fid = open(listing, "w")
     cpt = 0
-    for unit in ["S1A"]:
+    for unit in SAR_UNITS:
         for wv in ["wv1", "wv2"]:
             logging.info("%s", unit)
             for dd in rrule.rrule(
@@ -43,7 +43,7 @@ def write_listing_monthly(args):
     cpt = 0
     sto = datetime.datetime.today()
     sta = sto - datetime.timedelta(days=366)
-    for unit in ["S1A", "S1B"]:
+    for unit in SAR_UNITS:
         for wv in ["wv1", "wv2"]:
             logging.info("%s", unit)
             for dd in rrule.rrule(rrule.MONTHLY, dtstart=sta, until=sto):

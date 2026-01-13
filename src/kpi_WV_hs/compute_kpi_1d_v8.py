@@ -16,10 +16,7 @@ import numpy as np
 import xarray
 from read_and_concat_L2F import read_L2F_with_xarray
 
-from src.config import (
-    EXTRACTION_SERIES_L2F_FOR_LONGTERM_MONITORING_L2,
-    OUTPUTDIR_KPI_1D,
-)
+from kpimpc.config import OUTPUTDIR_KPI_1D, SAR_UNITS
 
 POLARIZATION = "VV"
 MODE = "WV"
@@ -360,7 +357,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--satellite",
-        choices=["S1A", "S1B"],
+        choices=SAR_UNITS,
         required=True,
         help="S-1 unit choice",
     )

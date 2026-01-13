@@ -6,6 +6,12 @@ def method_wind_azi_range(wind_u, wind_v, trackangle):
     """
     agrouaze: January 2020
     code adapted from IPF owi_lop_application
+
+    :Parameters:
+        param wind_u: np.ndarray or float zonal wind component (from East) in m/s
+        param wind_v: np.ndarray or float meridional wind component (from North) in m/s
+        param trackangle: np.ndarray or float SAR track angle in degrees (from North)
+
     :return:
         param ancillary_wind_dir_range: in meteorological convention from range
     """

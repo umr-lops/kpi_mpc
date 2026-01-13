@@ -14,10 +14,10 @@ t0 = time.time()
 from gmf_cmod5n import GMFCmod5n
 
 # first test to look at the content of the daily files SAFE containing the noise and denoised sigma0
-from src.config import INPUT_files
+from kpimpc.config import INPUT_files, SAR_UNITS
 
 
-def read_fat_calib_nc(satellite_list=["S1A", "S1B"]):
+def read_fat_calib_nc(satellite_list=SAR_UNITS):
     """
     read the fat netcdf files for NRCS investigations build from ocean_wv_calibration_huimin_method.py
     :return:
@@ -140,4 +140,4 @@ if __name__ == "__main__":
 
     # sta_str = start_date.strftime('%Y%m%d')
     # sto_str = stop_date.strftime('%Y%m%d')
-    df_slc_sat = read_fat_calib_nc(["S1A"])
+    df_slc_sat = read_fat_calib_nc([satellite])

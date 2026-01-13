@@ -8,7 +8,7 @@ import logging
 import numpy as np
 import xarray as xr
 
-from src.config import RASTER_NASA_COASTLINE
+from kpimpc.config import RASTER_NASA_COASTLINE
 
 nc = xr.open_dataset(RASTER_NASA_COASTLINE)
 DISTANCE_COASTs = nc["distance_to_coast"].values
