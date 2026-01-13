@@ -84,6 +84,7 @@ def read_L2F_with_xarray(
     :param alternative_L2F_path: str or None path to alternative L2F directory
     :param add_ecmwf_wind :bool True -> add ecmwf wind speed variable
     :return:
+        ds_dict_sat: dict of xarray.Dataset keyed by satellite name
     """
     if isinstance(start, datetime.date):
         start = datetime.datetime(start.year, start.month, start.day)

@@ -33,7 +33,12 @@ def load_Level2_series(satellite, start, stop, alternative_L2F=None):
     """
 
     :param satellite: str S1A or ...
+    :param start: datetime
+    :param stop: datetime
+    :param alternative_L2F: str or None path to alternative L2F directory
+
     :return:
+        dswv: xarray.Dataset with L2F data for the given satellite between start and stop
     """
 
     logging.info("load L2F data")
@@ -83,8 +88,18 @@ def load_Level2_series(satellite, start, stop, alternative_L2F=None):
     )
     #   ds_dict_sat = get_data_from_L2F(start, stop, satellites=[satellite], variables=vv, alternative_L2F_path=alternative_L2F,addpolygones=False)
     dswv = ds_dict_sat[satellite]
+    # reduce to range of dates using isel
+    logging.info('chosen dates are from %s to %s',start,stop)
+    logging.info('available WV fdatedt min %s max %s',dswv['fdatedt'].min().values,dswv['fdatedt'].max().values)
+    ivalid = np.where(
+        (dswv["fdatedt"].values >= np.datetime64(start))
+        & (dswv["fdatedt"].values <= np.datetime64(stop))
+    )[0]
+    dswv = dswv.isel(fdatedt=ivalid)
+    logging.info("number of L2F data loaded in the period considered: %s", len(dswv["fdatedt"]))
+    dswv = dswv.load() # to allow boolean indexing
     # dswv = xarray.Dataset(dswv)
-    logging.info("dswv type %s", type(dswv))
+    logging.debug("dswv type %s", type(dswv))
     if dswv != {}:
         # drop Nan
         dswv = dswv.where(
@@ -94,6 +109,24 @@ def load_Level2_series(satellite, start, stop, alternative_L2F=None):
         )
     return dswv
 
+def results_when_no_data():
+    """
+    to return default values when no data is available for the period
+    
+    """
+    mean_bias = np.nan
+    kpi_value = np.nan
+    std = np.nan
+    envelop_value = np.nan
+    nb_measu_total = 0
+    return (kpi_value,
+        envelop_value,
+        nb_measu_total,
+        mean_bias,
+        std,)
+
+      
+
 
 def compute_kpi_1d(
     sat,
@@ -101,7 +134,7 @@ def compute_kpi_1d(
     dev=False,
     stop_analysis_period=None,
     period_analysed_width=30,
-    df=None,
+    ds=None,
     alternative_L2F=None,
 ):
     """
@@ -111,12 +144,19 @@ def compute_kpi_1d(
     :param wv: str wv1 or wv2
     :param stop_analysis_period: datetime (-> period considered T-1 month : T)
     :param period_analysed_width : int 30 days by default
+    :param ds: xarray.Dataset or None if None the function load the data
+
     :return:
         kpi_value (float): between 0 and 100 %
         start_current_month (datetime):
         stop_current_month (datetime):
         envelop_value : (float) 2-sigma m threshold based on 3 months prior period
     """
+    (kpi_value,
+        envelop_value,
+        nb_measu_total,
+        mean_bias,
+        std,) = results_when_no_data()
     # compute the 2 sigma envelopp on the last 3 months prior to current month
     if stop_analysis_period is None:
         stop_current_month = datetime.datetime.today()
@@ -130,8 +170,8 @@ def compute_kpi_1d(
     )
     stop_prior_period = start_current_month
     nb_measu_total = 0
-    if df is None:
-        df = load_Level2_series(
+    if ds is None:
+        ds = load_Level2_series(
             satellite=sat,
             start=start_prior_period,
             stop=stop_current_month,
@@ -144,7 +184,7 @@ def compute_kpi_1d(
     logging.debug(
         "prior period ; %s to %s", start_prior_period, stop_prior_period
     )
-    _swh_azc_mod = df["ww3_effective_2Dcutoff_hs"].values
+    _swh_azc_mod = ds["ww3_effective_2Dcutoff_hs"].values
     logging.debug(
         "nb value WW3 eff Hs above 25 m : %s", (_swh_azc_mod > 25).sum()
     )
@@ -152,44 +192,43 @@ def compute_kpi_1d(
         ind_bad_ww3 = np.where(_swh_azc_mod > 25)[0][0]
         logging.debug(
             "a date SAR for which ww3 is extremely too high: %s -> Hs:%1.1fm",
-            df["fdatedt"][ind_bad_ww3],
+            ds["fdatedt"][ind_bad_ww3],
             _swh_azc_mod[ind_bad_ww3],
         )
     logging.debug("max Hs WW3 : %s", np.nanmax(_swh_azc_mod))
-    # _swh_azc_s1 = df["s1_effective_hs_2Dcutoff"].values
 
-    df["bias_swh_azc_" + wv] = xarray.DataArray(
-        df["oswXA_hs_ww3spec_firstSARpartition"].values[:, 0]
-        - df["oswXA_hs_ww3spec_firstSARpartition"].values[:, 1],
+    ds["bias_swh_azc_" + wv] = xarray.DataArray(
+        ds["oswXA_hs_ww3spec_firstSARpartition"].values[:, 0]
+        - ds["oswXA_hs_ww3spec_firstSARpartition"].values[:, 1],
         dims=["fdatedt"],
-        coords={"fdatedt": df["fdatedt"]},
+        coords={"fdatedt": ds["fdatedt"]},
     )
 
     if wv == "wv1":
-        cond_inc = df["oswIncidenceAngle"] < 30
+        cond_inc = ds["oswIncidenceAngle"] < 30
     elif wv == "wv2":
-        cond_inc = df["oswIncidenceAngle"] > 30
+        cond_inc = ds["oswIncidenceAngle"] > 30
     else:
         raise Exception(f"wv value un expected : {wv}")
-    polarizationcond = df.pol == POLARIZATION.lower()
-    logging.debug("df.pol %s", df.pol.values)
+    polarizationcond = ds.pol == POLARIZATION.lower()
+    logging.debug("ds.pol %s", ds.pol.values)
     logging.debug("polarizationcond %s", polarizationcond.values.sum())
 
-    cond_outlier_ww3_hs = abs(df["ww3_effective_2Dcutoff_hs"]) < 50
+    cond_outlier_ww3_hs = abs(ds["ww3_effective_2Dcutoff_hs"]) < 50
     logging.debug("cond_outlier_ww3_hs %s", cond_outlier_ww3_hs.values.sum())
-    fini_bias = np.isfinite(df["bias_swh_azc_" + wv]) & (
-        abs(df["bias_swh_azc_" + wv]) < 50
+    fini_bias = np.isfinite(ds["bias_swh_azc_" + wv]) & (
+        abs(ds["bias_swh_azc_" + wv]) < 50
     )
     logging.debug("fini_bias %s", fini_bias.values.sum())
-    latmax_cond = abs(df["oswLat"]) < LAT_MAX
+    latmax_cond = abs(ds["oswLat"]) < LAT_MAX
     logging.debug("latmax_cond %s", latmax_cond.values.sum())
-    dstmax_cond = df["dist2coastKM"] > MIN_DIST_2_COAST
+    dstmax_cond = ds["dist2coastKM"] > MIN_DIST_2_COAST
     logging.debug("dstmax_cond %s", dstmax_cond.values.sum())
     ocean_acqui_filters = (
         polarizationcond
         & latmax_cond
         & cond_outlier_ww3_hs
-        & (df["oswLandFlag"] == 0)
+        & (ds["oswLandFlag"] == 0)
         & dstmax_cond
         & cond_inc
         & fini_bias
@@ -201,11 +240,10 @@ def compute_kpi_1d(
         start_prior_period,
         stop_prior_period,
     )
-    # logging.debug('fdatetd : %s',df['fdatedt'])
     start_prior_period64 = np.datetime64(start_prior_period)
     stop_prior_period64 = np.datetime64(stop_prior_period)
-    mask_prior_period = (df["fdatedt"] >= start_prior_period64) & (
-        df["fdatedt"] <= stop_prior_period64
+    mask_prior_period = (ds["fdatedt"] >= start_prior_period64) & (
+        ds["fdatedt"] <= stop_prior_period64
     )
     final_mask_prior = ocean_acqui_filters & mask_prior_period
     logging.debug("final_mask_prior %s", final_mask_prior.values.sum())
@@ -213,119 +251,121 @@ def compute_kpi_1d(
         "nb pts in prior period (without extra filters) : %s",
         mask_prior_period.values.sum(),
     )
-    # subset_df = df[final_mask_prior]
-    subset_df = df.where(final_mask_prior, drop=True)
-    nb_nan = np.isnan(subset_df["bias_swh_azc_" + wv].values).sum()
-    # logging.debug('some values: %s',subset_df['bias_swh_azc_' + wv].values)
-    logging.debug("nb_nan : %s", nb_nan)
-    logging.debug(
-        "nb finite %s/%s",
-        np.isfinite(subset_df["bias_swh_azc_" + wv].values).sum(),
-        len(subset_df["bias_swh_azc_" + wv]),
-    )
-    # envelop_value = ENVELOP*np.nanstd(subset_df['bias_swh_azc_' + wv].values)
-    envelop_value = np.percentile(
-        abs(subset_df["bias_swh_azc_" + wv].values), ENVELOP
-    )
-    logging.debug("envelop_value : %s", envelop_value)
+    subset_ds = ds.where(final_mask_prior, drop=True)
+    if len(subset_ds["fdatedt"]) > 0:
+        nb_nan = np.isnan(subset_ds["bias_swh_azc_" + wv].values).sum()
+        logging.debug("nb_nan : %s", nb_nan)
+        logging.debug(
+            "nb finite %s/%s",
+            np.isfinite(subset_ds["bias_swh_azc_" + wv].values).sum(),
+            len(subset_ds["bias_swh_azc_" + wv]),
+        )
+        # envelop_value = ENVELOP*np.nanstd(subset_ds['bias_swh_azc_' + wv].values)
+        envelop_value = np.percentile(
+            abs(subset_ds["bias_swh_azc_" + wv].values), ENVELOP
+        )
+        logging.debug("envelop_value : %s", envelop_value)
 
-    # compute the number of product within the envelop for current month
-    start_current_month64 = np.datetime64(start_current_month)
-    stop_current_month64 = np.datetime64(stop_current_month)
-    current_date_cond = (df["fdatedt"] >= start_current_month64) & (
-        df["fdatedt"] <= stop_current_month64
-    )
-    logging.debug("current_date_cond %s", current_date_cond.values.sum())
-    logging.debug("ocean_acqui_filters %s", ocean_acqui_filters.values.sum())
-    mask_current_month = ocean_acqui_filters & current_date_cond
-    logging.debug("mask_current_month %s", mask_current_month.values.sum())
-    # subset_current_period = df[mask_current_month]
-    subset_current_period = df.where(mask_current_month, drop=True)
-    if (
-        "ww3_effective_2Dcutoff_hs" in subset_current_period
-        and len(subset_current_period["ww3_effective_2Dcutoff_hs"]) > 0
-    ):
-        logging.debug(
-            "max Hs WW3 in subset : %s",
-            np.nanmax(subset_current_period["ww3_effective_2Dcutoff_hs"]),
+        # compute the number of product within the envelop for current month
+        start_current_month64 = np.datetime64(start_current_month)
+        stop_current_month64 = np.datetime64(stop_current_month)
+        current_date_cond = (ds["fdatedt"] >= start_current_month64) & (
+            ds["fdatedt"] <= stop_current_month64
         )
-        logging.debug(
-            "max Hs SAR in subset : %s",
-            np.nanmax(subset_current_period["s1_effective_hs_2Dcutoff"]),
-        )
-        logging.debug(
-            "min Hs WW3 in subset : %s",
-            np.nanmin(subset_current_period["ww3_effective_2Dcutoff_hs"]),
-        )
-        logging.debug(
-            "min Hs SAR in subset : %s",
-            np.nanmin(subset_current_period["s1_effective_hs_2Dcutoff"]),
-        )
-        logging.debug(
-            "nb pts current month : %s", len(subset_current_period["fdatedt"])
-        )
-        nb_measu_total = len(subset_current_period["fdatedt"])
-        logging.debug(
-            "bias : %s", subset_current_period["bias_swh_azc_" + wv].values
-        )
+        logging.debug("current_date_cond %s", current_date_cond.values.sum())
+        logging.debug("ocean_acqui_filters %s", ocean_acqui_filters.values.sum())
+        mask_current_month = ocean_acqui_filters & current_date_cond
+        logging.debug("mask_current_month %s", mask_current_month.values.sum())
+        subset_current_period = ds.where(mask_current_month, drop=True)
+        if (
+            "ww3_effective_2Dcutoff_hs" in subset_current_period
+            and len(subset_current_period["ww3_effective_2Dcutoff_hs"]) > 0
+        ):
+            logging.debug(
+                "max Hs WW3 in subset : %s",
+                np.nanmax(subset_current_period["ww3_effective_2Dcutoff_hs"]),
+            )
+            logging.debug(
+                "max Hs SAR in subset : %s",
+                np.nanmax(subset_current_period["s1_effective_hs_2Dcutoff"]),
+            )
+            logging.debug(
+                "min Hs WW3 in subset : %s",
+                np.nanmin(subset_current_period["ww3_effective_2Dcutoff_hs"]),
+            )
+            logging.debug(
+                "min Hs SAR in subset : %s",
+                np.nanmin(subset_current_period["s1_effective_hs_2Dcutoff"]),
+            )
+            logging.debug(
+                "nb pts current month : %s", len(subset_current_period["fdatedt"])
+            )
+            nb_measu_total = len(subset_current_period["fdatedt"])
+            logging.debug(
+                "bias : %s", subset_current_period["bias_swh_azc_" + wv].values
+            )
 
-        # definition proposee par Hajduch le 10dec2021 screenshot a lappuit (je ne suis pas convaincu pas l introduction du biais dans le calcul de levenveloppe car le KPI sera dautant plus elever que le biais sera fort (cest linverse qui est cherche)
-        # bias_minus_2sigma = abs(subset_current_period['bias_swh_azc_' + wv].mean().values-envelop_value)
-        # bias_plus_2sigma = abs(subset_current_period['bias_swh_azc_' + wv].mean().values+envelop_value)
-        # logging.info('bias_plus_2sigma %s',bias_plus_2sigma)
-        # T = np.max([bias_minus_2sigma,bias_plus_2sigma])
-        T = envelop_value
-        logging.info("T : %s %s", T.shape, T)
-        nb_measu_inside_envelop = (
-            (abs(subset_current_period["bias_swh_azc_" + wv]) < T).sum().values
-        )
-        std = np.nanstd(subset_current_period["bias_swh_azc_" + wv])
-        mean_bias = np.mean(subset_current_period["bias_swh_azc_" + wv]).values
-        logging.debug("nb_measu_inside_envelop : %s", nb_measu_inside_envelop)
-        kpi_value = 100.0 * nb_measu_inside_envelop / nb_measu_total
-        logging.debug("kpi_value : %s", kpi_value)
-        if dev:
-            from matplotlib import pyplot as plt
+            # definition proposee par Hajduch le 10dec2021 screenshot a lappuit (je ne suis pas convaincu pas l introduction du biais dans le calcul de levenveloppe car le KPI sera dautant plus elever que le biais sera fort (cest linverse qui est cherche)
+            # bias_minus_2sigma = abs(subset_current_period['bias_swh_azc_' + wv].mean().values-envelop_value)
+            # bias_plus_2sigma = abs(subset_current_period['bias_swh_azc_' + wv].mean().values+envelop_value)
+            # logging.info('bias_plus_2sigma %s',bias_plus_2sigma)
+            # T = np.max([bias_minus_2sigma,bias_plus_2sigma])
+            T = envelop_value
+            logging.info("T : %s %s", T.shape, T)
+            nb_measu_inside_envelop = (
+                (abs(subset_current_period["bias_swh_azc_" + wv]) < T).sum().values
+            )
+            std = np.nanstd(subset_current_period["bias_swh_azc_" + wv])
+            mean_bias = np.mean(subset_current_period["bias_swh_azc_" + wv]).values
+            logging.debug("nb_measu_inside_envelop : %s", nb_measu_inside_envelop)
+            kpi_value = 100.0 * nb_measu_inside_envelop / nb_measu_total
+            logging.debug("kpi_value : %s", kpi_value)
+            if dev:
+                from matplotlib import pyplot as plt
 
-            plt.figure()
-            binz = np.arange(0, 10, 0.1)
-            hh, _ = np.histogram(
-                subset_current_period["ww3_effective_2Dcutoff_hs"], binz
+                plt.figure()
+                binz = np.arange(0, 10, 0.1)
+                hh, _ = np.histogram(
+                    subset_current_period["ww3_effective_2Dcutoff_hs"], binz
+                )
+                plt.plot(
+                    binz[0:-1],
+                    hh,
+                    label="WWIII {}".format(
+                        len(subset_current_period["ww3_effective_2Dcutoff_hs"])
+                    ),
+                )
+                hh, _ = np.histogram(
+                    subset_current_period["s1_effective_hs_2Dcutoff"], binz
+                )
+                plt.plot(
+                    binz[0:-1],
+                    hh,
+                    label="SAR {}".format(
+                        len(subset_current_period["ww3_effective_2Dcutoff_hs"])
+                    ),
+                )
+                plt.grid(True)
+                plt.legend()
+                plt.xlabel("Hs (m)")
+                output = "/home1/scratch/agrouaze/test_histo_kpi_1d.png"
+                plt.savefig(output)
+                logging.debug("png test : %s", output)
+                # plt.show()
+        else:
+            logging.debug(
+                "no data for period %s to %s",
+                start_current_month,
+                stop_current_month,
             )
-            plt.plot(
-                binz[0:-1],
-                hh,
-                label="WWIII {}".format(
-                    len(subset_current_period["ww3_effective_2Dcutoff_hs"])
-                ),
-            )
-            hh, _ = np.histogram(
-                subset_current_period["s1_effective_hs_2Dcutoff"], binz
-            )
-            plt.plot(
-                binz[0:-1],
-                hh,
-                label="SAR {}".format(
-                    len(subset_current_period["ww3_effective_2Dcutoff_hs"])
-                ),
-            )
-            plt.grid(True)
-            plt.legend()
-            plt.xlabel("Hs (m)")
-            output = "/home1/scratch/agrouaze/test_histo_kpi_1d.png"
-            plt.savefig(output)
-            logging.debug("png test : %s", output)
-            # plt.show()
+            logging.debug("subset_current_period %s", subset_current_period)
     else:
-        mean_bias = np.nan
-        kpi_value = np.nan
-        std = np.nan
         logging.debug(
             "no data for period %s to %s",
             start_current_month,
             stop_current_month,
         )
-        logging.debug("subset_current_period %s", subset_current_period)
+        logging.debug("subset_ds %s", subset_ds)
     return (
         kpi_value,
         start_current_month,
@@ -374,6 +414,12 @@ def entrypoint():
         action="store",
         default=None,
     )
+    parser.add_argument(
+        "--outputdir",
+        help="output directory",
+        required=False,
+        default=OUTPUTDIR_KPI_1D,
+    )
     args = parser.parse_args()
 
     fmt = "%(asctime)s %(levelname)s %(filename)s(%(lineno)d) %(message)s"
@@ -396,7 +442,7 @@ def entrypoint():
     # output_file = '/home1/scratch/agrouaze/kpi_1d_v2/%s/kpi_output_%s_%s_%s.txt' % ('v8percentile95',
     # sat,wv,end_date.strftime('%Y%m%d'))
     output_file = os.path.join(
-        OUTPUTDIR_KPI_1D,
+        args.outputdir,
         "v8percentile95",
         "kpi_output_{}_{}_{}.txt".format(sat, wv, end_date.strftime("%Y%m%d")),
     )
@@ -417,7 +463,7 @@ def entrypoint():
             wv=wv,
             dev=False,
             stop_analysis_period=end_date,
-            df=None,
+            ds=None,
             alternative_L2F=alternative_L2F,
         )
         logging.info("##########")
