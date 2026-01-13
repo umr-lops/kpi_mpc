@@ -9,3 +9,4 @@ VERSION_L2F = '0.8' #add cci hs NN Quach 2020 in v3.2 format + add 10 classifica
 PROJECT_DIR_DATARMOR = '/home/datawork-cersat-public/cache/project/mpc-sentinel1/'
 DIR_ANALYSIS = os.path.join(PROJECT_DIR_DATARMOR,"analysis","s1_data_analysis")
 DIR_L2F_WV_DAILY = os.path.join(DIR_ANALYSIS,'L2_full_daily',VERSION_L2F)
+SAR_UNITS = ['S1A', 'S1B', 'S1C', 'S1D']
