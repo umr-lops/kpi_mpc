@@ -8,4 +8,6 @@ echo start
 #$1 start date YYYYMMDD
 #$2 stop date YYYYMMDD
 #$3 kpi name: kpi1b or kpi1d
-bash /home1/datahome/agrouaze/git/kpi_mpc/src/push_wrapper_singularity.bash $1 $2 $3
+pushwrapperpath=`readlink -f ./push_wrapper_singularity.bash`
+echo "pushwrapperpath = $pushwrapperpath"
+bash $pushwrapperpath $1 $2 $3
