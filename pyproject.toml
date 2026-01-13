@@ -4,14 +4,8 @@ requires-python = ">= 3.10"
 license = "MIT"
 description = "libraries to compute Key Performance Indicators for Mission Performance Center (Sentinel-1 SAR mission)"
 readme = "README.md"
-dependencies = ["numpy", "xarray", "scipy","netcdf4"]
-keywords = [
-  "kpi",
-  "mpc",
-  "metrics",
-  "monitoring",
-  "analytics",
-]
+dependencies = ["numpy", "xarray", "scipy", "netcdf4"]
+keywords = ["kpi", "mpc", "metrics", "monitoring", "analytics"]
 classifiers = [
   "Development Status :: 4 - Beta",
   "Operating System :: OS Independent",
@@ -82,24 +76,9 @@ show_missing = true
 exclude_lines = ["pragma: no cover", "if TYPE_CHECKING"]
 
 [tool.ruff.lint]
-ignore = [
-  "E402",
-  "E501",
-  "E731",
-  "UP038",
-]
-select = [
-  "F",
-  "E",
-  "I",
-  "UP",
-  "TID",
-  "W",
-]
-extend-safe-fixes = [
-  "TID252",
-  "UP031",
-]
+ignore = ["E402", "E501", "E731", "UP038"]
+select = ["F", "E", "I", "UP", "TID", "W"]
+extend-safe-fixes = ["TID252", "UP031"]
 fixable = ["I", "TID252", "UP"]
 
 [tool.ruff.lint.isort]
