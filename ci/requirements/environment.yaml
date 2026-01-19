@@ -1,0 +1,23 @@
+name: kpimpc-tests
+channels:
+  - conda-forge
+dependencies:
+  - ipython
+  - python
+  - pre-commit
+  - pytest
+  - pytest-reportlog
+  - pytest-cov
+  - numpy
+  - toolz
+  - cytoolz
+  - python-dateutil
+  - construct
+  - fsspec
+  - xarray
+  - aiohttp
+  - pyproj
+  - scipy
+  - netcdf4
+  - h5netcdf
+  - dask
