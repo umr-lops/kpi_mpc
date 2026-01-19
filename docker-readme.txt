@@ -8,3 +8,6 @@ docker run -i -t --rm -v /home/datawork-cersat-public/:/home/datawork-cersat-pub
 example 
 docker run -i -t --rm -v /raid:/raid -v /home/datawork-cersat-public/:/home/datawork-cersat-public/ kpimpc:2026.1.13.dev kpihs  --overwrite --satellite S1A --wv wv1 --enddate 20221214 --outputdir /raid/localscratch/agrouaze/
 
+# apptainer
+
+ apptainer build --force /scale/project/lops-siam-airflow/envs_exploit/apptainer/kpimpc_20260113_apptainer.sif "docker-daemon://kpimpc:2026.1.13"
