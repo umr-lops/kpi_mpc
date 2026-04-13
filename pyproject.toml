@@ -25,7 +25,7 @@ repository = "https://github.com/umr-lops/kpi_mpc.git"
 # changelog = ""
 
 [build-system]
-requires = ["setuptools>=64.0", "setuptools-scm"]
+requires = ["setuptools>=82.0.1", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
