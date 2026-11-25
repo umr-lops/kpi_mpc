@@ -6,6 +6,7 @@ history:
     June 22: revision of the envelop definition (to avoid taking the bias twice)
 """
 
+import argparse
 import datetime
 import logging
 import os
@@ -28,16 +29,33 @@ MIN_DIST_2_COAST = 100  # km
 
 
 def compute_kpi_1b(sat, wv, stop_analysis_period=None, df_slc_sat=None):
-    """
-    NRCS (denoised) observed compared to predicted GMF CMOD5n
-    :param sat: str S1A or ..
-    :param wv: str wv1 or wv2
-    :param stop_analysis_period: datetime (-> period considered date-1 month : date)
-    :return:
-        kpi_value (float): between 0 and 100 %
-        start_current_month (datetime):
-        stop_current_month (datetime):
-        envelop_value : (float) 2-sigma dB threshold based on 3 months prior period
+    """KPI-1b: WV NRCS (denoised) observed compared to the CMOD5n prediction.
+
+    The envelope is the 95th percentile of the absolute NRCS difference over
+    the 3 months before the analysed month; the KPI is the share of the
+    analysed month inside this envelope.
+
+    Parameters
+    ----------
+    sat : str
+        Sentinel-1 unit (``S1A``, ``S1B``, ``S1C`` or ``S1D``).
+    wv : str
+        WV incidence angle (``wv1`` or ``wv2``).
+    stop_analysis_period : datetime.datetime, optional
+        End of the analysed month (default: today); the analysed period is
+        ``[stop - 30 days, stop]``.
+    df_slc_sat : pandas.DataFrame, optional
+        Already-loaded calibration data (default: read
+        :data:`kpimpc.config.INPUT_files` for ``sat``).
+
+    Returns
+    -------
+    tuple
+        ``(kpi_value, start_current_month, stop_current_month, envelop_value,
+        nb_measu_total, nb_measu_inside_envelop, mean_bias, std)``: the KPI in
+        % (0 to 100), the analysed period, the envelope (dB), the number of
+        measurements (total and inside the envelope), and the mean and
+        standard deviation of the NRCS difference (dB).
     """
     if df_slc_sat is None:
         df_slc_sat = read_fat_calib_nc(satellite_list=[sat])
@@ -137,16 +155,12 @@ def compute_kpi_1b(sat, wv, stop_analysis_period=None, df_slc_sat=None):
     )
 
 
-def entrypoint():
-    root = logging.getLogger()
-    if root.handlers:
-        for handler in root.handlers:
-            root.removeHandler(handler)
-    import argparse
-    import resource
-
-    time.sleep(np.random.rand(1, 1)[0][0])  # to avoid issue with mkdir
-    parser = argparse.ArgumentParser(description="kpi-1b")
+def get_parser():
+    """Command-line parser of ``kpinrcs``."""
+    parser = argparse.ArgumentParser(
+        prog="kpinrcs",
+        description="KPI-1b: WV NRCS (denoised) bias with respect to CMOD5n, one unit / WV / end date",
+    )
     parser.add_argument("--verbose", action="store_true", default=False)
     parser.add_argument(
         "--overwrite",
@@ -180,7 +194,18 @@ def entrypoint():
         required=False,
         default=OUTPUTDIR_KPI_1B,
     )
-    args = parser.parse_args()
+    return parser
+
+
+def entrypoint():
+    root = logging.getLogger()
+    if root.handlers:
+        for handler in root.handlers:
+            root.removeHandler(handler)
+    import resource
+
+    time.sleep(np.random.rand(1, 1)[0][0])  # to avoid issue with mkdir
+    args = get_parser().parse_args()
 
     fmt = "%(asctime)s %(levelname)s %(filename)s(%(lineno)d) %(message)s"
 

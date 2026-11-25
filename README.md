@@ -1,5 +1,7 @@
 # Kpi Mpc
 
+Documentation: https://kpi-mpc.readthedocs.io (sources in `docs/`).
+
 libs to compute 2 KPIs for MPC Sentinel-1 project:
 
 - a) WV VV effective Hs bias (wrt WW3) called KPI-1d

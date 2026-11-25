@@ -8,3 +8,5 @@
     sftp batch mode (a failed transfer now fails the command), --dry-run, --check-connection
   - Apptainer image definition apptainer/kpimpc.def (sftp client included)
   - distance-to-coast raster read at first use instead of at import
+  - Sphinx documentation (docs/, Read the Docs), get_parser() for kpinrcs and kpihs
+  - fix of the ruff errors reported by pre-commit

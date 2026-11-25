@@ -7,6 +7,7 @@ history:
     June 22: revision of the envelop definition (to avoid taking the bias twice)
 """
 
+import argparse
 import datetime
 import logging
 import os
@@ -149,22 +150,37 @@ def compute_kpi_1d(
     ds=None,
     alternative_L2F=None,
 ):
-    """
-    osw VV WV S-1 effective Hs (2D-cutoff) compared to WWIII Hs computed on same grid/same mask
-    note that low freq mask is applied both on S-1 spectrum and WWIII spectrum
-    :param sat: str S1A or ..
-    :param wv: str wv1 or wv2
-    :param dev: bool True -> development mode (reduce number of data analyzed)
-    :param stop_analysis_period: datetime (-> period considered T-1 month : T)
-    :param period_analysed_width : int 30 days by default
-    :param ds: xarray.Dataset or None if None the function load the data
-    :param alternative_L2F: str or None path to alternative L2F directory [ optional]
+    """KPI-1d: WV effective Hs (2D cut-off) compared to WW3 Hs.
 
-    :return:
-        kpi_value (float): between 0 and 100 %
-        start_current_month (datetime):
-        stop_current_month (datetime):
-        envelop_value : (float) 2-sigma m threshold based on 3 months prior period
+    The WW3 Hs is computed on the same grid with the same low-frequency mask
+    as the Sentinel-1 spectrum. The envelope is the 95th percentile of the
+    absolute Hs difference over the 3 months before the analysed period; the
+    KPI is the share of the analysed period inside this envelope.
+
+    Parameters
+    ----------
+    sat : str
+        Sentinel-1 unit (``S1A``, ``S1B``, ``S1C`` or ``S1D``).
+    wv : str
+        WV incidence angle (``wv1`` or ``wv2``).
+    dev : bool, optional
+        Development mode (fewer data analysed).
+    stop_analysis_period : datetime.datetime, optional
+        End of the analysed period (default: today).
+    period_analysed_width : int, optional
+        Width of the analysed period in days (default 30).
+    ds : xarray.Dataset, optional
+        Already-loaded L2F data (default: read from the L2F daily files).
+    alternative_L2F : str, optional
+        Directory of the L2F daily files to read instead of the default one.
+
+    Returns
+    -------
+    tuple
+        ``(kpi_value, start_current_month, stop_current_month, envelop_value,
+        nb_measu_total, mean_bias, std)``: the KPI in % (0 to 100), the
+        analysed period, the envelope (m), the number of measurements, and
+        the mean and standard deviation of the Hs difference (m).
     """
     (
         kpi_value,
@@ -403,16 +419,12 @@ def compute_kpi_1d(
     )
 
 
-def entrypoint():
-    root = logging.getLogger()
-    if root.handlers:
-        for handler in root.handlers:
-            root.removeHandler(handler)
-    import argparse
-    import resource
-
-    time.sleep(np.random.rand(1, 1)[0][0])  # to avoid issue with mkdir
-    parser = argparse.ArgumentParser(description="kpi-1d")
+def get_parser():
+    """Command-line parser of ``kpihs``."""
+    parser = argparse.ArgumentParser(
+        prog="kpihs",
+        description="KPI-1d: WV effective Hs bias with respect to WW3, one unit / WV / end date",
+    )
     parser.add_argument("--verbose", action="store_true", default=False)
     parser.add_argument(
         "--overwrite",
@@ -453,7 +465,18 @@ def entrypoint():
         help="development mode (reduce number of data analyzed)",
         required=False,
     )
-    args = parser.parse_args()
+    return parser
+
+
+def entrypoint():
+    root = logging.getLogger()
+    if root.handlers:
+        for handler in root.handlers:
+            root.removeHandler(handler)
+    import resource
+
+    time.sleep(np.random.rand(1, 1)[0][0])  # to avoid issue with mkdir
+    args = get_parser().parse_args()
 
     fmt = "%(asctime)s %(levelname)s %(filename)s(%(lineno)d) %(message)s"
 

@@ -28,9 +28,12 @@ classifiers = [
   "Topic :: Scientific/Engineering",
 ]
 dynamic = ["version"]
+
+[project.optional-dependencies]
+docs = ["sphinx", "furo", "sphinx-argparse"]
 [project.urls]
 # homepage = ""
-# documentation = ""
+documentation = "https://kpi-mpc.readthedocs.io"
 repository = "https://github.com/umr-lops/kpi_mpc.git"
 # changelog = ""
 
