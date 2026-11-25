@@ -2,3 +2,9 @@
   - add filter on NRCS, WW3 Hs and ECMWF wind speed for kpi-1d
 # 16 dec 2022
   - add bash scripts to push data to ECE for KPI computation
+# 25 nov 2026
+  - data paths configurable with KPIMPC_DATA_ROOT (new Ifremer HPC: /legacy/project/cersat/public)
+  - kpipush (kpimpc/ece_push.py) replaces the bash / singularity push scripts: S1C/S1D only,
+    sftp batch mode (a failed transfer now fails the command), --dry-run, --check-connection
+  - Apptainer image definition apptainer/kpimpc.def (sftp client included)
+  - distance-to-coast raster read at first use instead of at import

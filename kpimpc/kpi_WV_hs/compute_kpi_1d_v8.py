@@ -15,7 +15,7 @@ import time
 import numpy as np
 import xarray
 
-from kpimpc.config import OUTPUTDIR_KPI_1D, SAR_UNITS
+from kpimpc.config import DIR_L2F_WV_DAILY, OUTPUTDIR_KPI_1D, SAR_UNITS
 from kpimpc.kpi_WV_hs.read_and_concat_L2F import read_L2F_with_xarray
 
 POLARIZATION = "VV"
@@ -482,7 +482,7 @@ def entrypoint():
     if os.path.exists(output_file) and args.overwrite is False:
         logging.info("output %s already exists", output_file)
     else:
-        alternative_L2F = "/home/datawork-cersat-public/project/mpc-sentinel1/analysis/s1_data_analysis/L2_full_daily/0.8/"
+        alternative_L2F = DIR_L2F_WV_DAILY
         (
             kpi_v,
             start_cur_month,

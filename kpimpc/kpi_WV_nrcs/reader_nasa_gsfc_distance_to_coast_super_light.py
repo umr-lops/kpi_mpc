@@ -3,18 +3,28 @@ Antoine Grouazel
 Nov 2019
 """
 
+import functools
 import logging
 
 import numpy as np
 import xarray as xr
 
-from kpimpc.config import RASTER_NASA_COASTLINE
+from kpimpc import config
 
-nc = xr.open_dataset(RASTER_NASA_COASTLINE)
-DISTANCE_COASTs = nc["distance_to_coast"].values
-LON_COASTs = nc["lon"].values
-LAT_COASTs = nc["lat"].values
-nc.close()
+
+@functools.lru_cache(maxsize=1)
+def load_raster():
+    """Read the distance-to-coast raster once, at first use (not at import,
+    so that the CLI help works without the data mounted).
+
+    :return: (distance 2D array, lon 1D array, lat 1D array)
+    """
+    with xr.open_dataset(config.RASTER_NASA_COASTLINE) as nc:
+        return (
+            nc["distance_to_coast"].values,
+            nc["lon"].values,
+            nc["lat"].values,
+        )
 
 
 def latlon2ij(lat, lon, shape2D, llbox):
@@ -50,6 +60,7 @@ def latlon2ij(lat, lon, shape2D, llbox):
 
 
 def get_distance_to_coast_vecto(lons, lats):
+    DISTANCE_COASTs, LON_COASTs, LAT_COASTs = load_raster()
     llbox = (LAT_COASTs[0], LON_COASTs[0], LAT_COASTs[-1], LON_COASTs[-1])
     indlat, indlon = latlon2ij(lats, lons, np.shape(DISTANCE_COASTs), llbox)
     indlat[(indlat >= DISTANCE_COASTs.shape[0])] = DISTANCE_COASTs.shape[0] - 1
