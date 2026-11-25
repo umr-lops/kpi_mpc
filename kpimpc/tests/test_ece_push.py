@@ -50,11 +50,10 @@ def data_root(tmp_path, monkeypatch):
 
 
 def test_data_root_env(data_root):
-    assert config.DIR_L2F_WV_DAILY == str(
-        data_root
-        / "cache/project/mpc-sentinel1/analysis/s1_data_analysis"
-        / "L2_full_daily/0.8"
-    )
+    expected = data_root.joinpath(
+        "cache", "project", "mpc-sentinel1", "analysis", "s1_data_analysis"
+    ).joinpath("L2_full_daily", "0.8")
+    assert pathlib.Path(config.DIR_L2F_WV_DAILY) == expected
 
 
 def test_list_input_files_kpi1d(data_root):
@@ -71,7 +70,7 @@ def test_list_input_files_kpi1d(data_root):
         datetime.datetime(2026, 11, 20),
         datetime.datetime(2026, 11, 22),
     )
-    names = [f.split("/")[-1][:12] for f in files]
+    names = [os.path.basename(f)[:12] for f in files]
     # S1A is not an active unit any more; day 20261120 is missing
     assert names == ["S1C_WV_L2F_e", "S1D_WV_L2F_e"] * 2
 
