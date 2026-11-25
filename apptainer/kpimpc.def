@@ -1,0 +1,64 @@
+# Apptainer image of kpimpc: KPI-1b / KPI-1d computation and push of their input
+# files to the MPC ECE (sftp), for the Ifremer HPC (Slurm, Airflow lops).
+#
+# Build from the repository root (the %files paths are relative to it):
+#   V=$(git describe --tags)
+#   apptainer build --fakeroot --build-arg KPIMPC_VERSION=$V kpimpc_$V.sif apptainer/kpimpc.def
+#
+# Console scripts on the PATH (apptainer exec kpimpc.sif <cmd> -h):
+#   kpinrcs  KPI-1b (NRCS WV vs CMOD5n), one unit / WV / end date per call
+#   kpihs    KPI-1d (Hs WV vs WW3),      one unit / WV / end date per call
+#   kpipush  push of the KPI input files to the ECE (sftp + ssh key)
+# Data paths: export KPIMPC_DATA_ROOT=/legacy/project/cersat/public (new HPC)
+# (APPTAINERENV_KPIMPC_DATA_ROOT=... or `apptainer exec --env`), see kpimpc/config.py.
+
+Bootstrap: docker
+From: python:3.12-slim
+
+%arguments
+    KPIMPC_VERSION=0.0.0
+
+%labels
+    org.opencontainers.image.source https://github.com/umr-lops/kpi_mpc
+    org.opencontainers.image.version {{ KPIMPC_VERSION }}
+
+%environment
+    export PYTHONUNBUFFERED=1
+    export HDF5_USE_FILE_LOCKING=FALSE
+
+%files
+    ./pyproject.toml /opt/src/kpi_mpc/
+    ./README.md /opt/src/kpi_mpc/
+    ./LICENSE /opt/src/kpi_mpc/
+    ./kpimpc /opt/src/kpi_mpc/
+
+%post
+    set -eux
+    # sftp client for the ECE push; ncat for an optional HTTP CONNECT proxy
+    # (KPIMPC_ECE_PROXY_COMMAND="ncat --proxy host:port --proxy-type http %h %p")
+    apt-get update
+    apt-get install -y --no-install-recommends openssh-client ncat
+    rm -rf /var/lib/apt/lists/*
+    rm -rf /opt/src/kpi_mpc/kpimpc/tests
+    SETUPTOOLS_SCM_PRETEND_VERSION={{ KPIMPC_VERSION }} \
+        python -m pip install --no-cache-dir /opt/src/kpi_mpc
+    rm -rf /opt/src
+    python -c "import kpimpc; print(kpimpc.__version__)"
+
+%test
+    set -e
+    python -c "import kpimpc, h5py, dask, netCDF4, scipy; print(kpimpc.__version__)"
+    kpinrcs -h > /dev/null
+    kpihs -h > /dev/null
+    kpipush -h > /dev/null
+    sftp 2>&1 | grep -q usage
+    ncat --version
+
+%help
+    kpimpc: KPI-1b / KPI-1d of the Sentinel-1 MPC (WV) and push of their input
+    files to the MPC ECE. See https://github.com/umr-lops/kpi_mpc
+
+      apptainer exec --env KPIMPC_DATA_ROOT=/legacy/project/cersat/public kpimpc.sif \
+          kpinrcs --satellite S1C --wv wv1 --enddate 20261120
+      apptainer exec ... kpipush --kpi kpi1d --startdate 20261120 --stopdate 20261125 --dry-run
+      apptainer inspect kpimpc.sif   (version in the labels)
