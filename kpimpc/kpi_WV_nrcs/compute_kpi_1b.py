@@ -65,7 +65,7 @@ def compute_kpi_1b(sat, wv, stop_analysis_period=None, df_slc_sat=None):
         raise Exception(f"wv value un expected : {wv}")
     ocean_acqui_filters = (
         (abs(df_slc["_lat_sar"]) < LAT_MAX)
-        & (df_slc["_land"] == False)
+        & df_slc["_land"].eq(False)
         & (df_slc["distance2coast"] > MIN_DIST_2_COAST)
     )
     mask_prior_period = (
